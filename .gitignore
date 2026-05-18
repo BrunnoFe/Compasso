@@ -10,7 +10,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Logs do sistema (Ajustado para o seu código)
+# Logs e arquivos de depuração
 logs/
 *.log
 
