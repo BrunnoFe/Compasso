@@ -1,0 +1,25 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+
+# Ambientes Virtuais
+venv/
+env/
+.env
+
+# Arquivos compilados do Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs do sistema (Ajustado para o seu código)
+logs/
+*.log
+
+# Pasta de Dados / Excel
+data/
+*.xlsx
+*.csv
+
+# Configurações do Editor e SO
+.vscode/
+.DS_Store
+Thumbs.db
