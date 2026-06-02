@@ -4,8 +4,8 @@ import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
 
 from . import gui_logger
-from .gui_configs import set_window_grid, set_window_configs, set_grids
-from src.core.bitalino_connect import connectar_bitalino, run_scan_devices
+from . import set_window_grid, set_window_configs, set_grids
+from src.core import connectar_bitalino, run_scan_devices
 
 ctk.set_appearance_mode("system")
 

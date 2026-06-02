@@ -1,7 +1,8 @@
 import re
 import asyncio
 
-from bleak import BleakScanner
+import bleak
+
 from pylsl import StreamInlet, resolve_byprop
 
 from . import connection_logger
@@ -71,7 +72,7 @@ async def scan_devices():
      """
     try:
         connection_logger.logger.info('Iniciando escaneamento de dispositivos Bluetooth LE próximos...')
-        devices = await BleakScanner.discover(timeout=3.0)
+        devices = await bleak.BleakScanner.discover(timeout=3.0)
         if devices:
             dispositivos = [f'{d.name if d.name is not None else "Nome não disponível"} - {d.address}' for d in devices]
             connection_logger.logger.info(f'{len(devices)} dispositivo(s) encontrado(s) durante o escaneamento.')
@@ -82,10 +83,22 @@ async def scan_devices():
             connection_logger.logger.info('Nenhum dispositivo Bluetooth LE encontrado durante o escaneamento.')
             return None
     except Exception as e:
-        connection_logger.logger.error(f'Erro durante o escaneamento de dispositivos Bluetooth LE: {e}')
+        if isinstance(e, bleak.exc.BleakBluetoothNotAvailableError):
+            erro = 'Bluetooh não ligado ou habilitado no computador. Por favor, ligue o bluetooth e escaneie novamente.'
+            connection_logger.logger.error(erro)
+        else:
+            erro = f'Erro durante o escaneamento de dispositivos Bluetooth LE: {e}'
+            connection_logger.logger.error(erro)
         return None
-
+    #bleak.exc.BleakBluetoothNotAvailableError: ('Bluetooth radio is not powered on. Turn on Bluetooth and try again.', <BleakBluetoothNotAvailableReason.POWERED_OFF: 3>)
+    
 def run_scan_devices():
+    """
+    Função para executar o escaneamento de dispositivos Bluetooth LE de forma síncrona, utilizando a função assíncrona scan_devices.
+    
+    :return: Lista de dispositivos encontrados ou None se nenhum dispositivo for encontrado ou se ocorrer um erro.
+    
+    """
     scan_result = asyncio.run(scan_devices()) 
     dispositivos = scan_result if scan_result is not None else None
     return dispositivos
