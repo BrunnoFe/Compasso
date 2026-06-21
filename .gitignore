@@ -16,6 +16,7 @@ logs/
 
 # Pasta de Dados / Excel
 data/
+musicas/
 *.xlsx
 *.csv
 
@@ -23,3 +24,7 @@ data/
 .vscode/
 .DS_Store
 Thumbs.db
+
+#arquivos ia
+compasso_context.md
+CLAUDE.MD

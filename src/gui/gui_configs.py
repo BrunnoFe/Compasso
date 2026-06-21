@@ -27,10 +27,17 @@ def set_window_configs(master, width:int=400, height:int=200, width_multip=None,
         """
         master.user_screen_height = master.winfo_screenheight()
         master.user_screen_width = master.winfo_screenwidth()
-        master.app_width = int(master.user_screen_width*width_multip) if width_multip is not None else width
-        master.app_heigth = int(master.user_screen_height*height_multip) if height_multip is not None else height
-        master.geometry_str = f"{master.app_width}x{master.app_heigth}+{(master.user_screen_width//2)-(master.app_width//2)}+{(master.user_screen_height//2)-(master.app_heigth//2)}"
+        
+        if master.user_screen_height < 1200:
+            master.app_width = 1280
+            master.app_heigth = 768
+        else:
+            master.app_width = int(master.user_screen_width*width_multip) if width_multip is not None else width
+            master.app_heigth = int(master.user_screen_height*height_multip) if height_multip is not None else height
+        
+        master.geometry_str = f"{master.app_width}x{master.app_heigth}+{(master.user_screen_width//2)-(master.app_width//2)}+{(master.user_screen_height//2)-(master.app_heigth//2)}"             
         master.geometry(master.geometry_str)
+
         gui_logger.logger.info(msg=f"""Janela configurada com sucesso!
                                       User screen = {master.user_screen_width}x{master.user_screen_height}.
                                       App geometry = {master.app_width}x{master.app_heigth}.
