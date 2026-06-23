@@ -1,9 +1,11 @@
 import os
+import platform
 
 from PIL import Image
 
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
+from pycaw.pycaw import AudioUtilities
 
 from . import gui_logger
 from . import set_window_grid, set_window_configs, set_grids
@@ -20,6 +22,11 @@ WIN_MIN_HEIGHT: int = 768
 BORDER_WIDTH: int = 5
 BORDER_WIDTH_INSIDE: int = 8
 CORNER: int = 30
+
+"""Forestgreen #228B22
+PaleGoldenrod #EEE8AA
+Seashell4 #8B8682"""
+
 AZUL: str = "#99acff"
 AZUL_CLARO: str = "#c2cdff"
 CINZA: str = "#806e86"
@@ -164,9 +171,12 @@ class UpFrame(ctk.CTkFrame):
                           width=500, height=300)
         else:
             self.bitalino = bitalino
+            self.bitalino_connected = True
             self.button_conect_bitalino.unbind('<Enter>')
             self.button_conect_bitalino.unbind('<Leave>')
             self.button_conect_bitalino.configure(state="disabled", image=self.button_conectbt_img_conectado)
+            self.refresh_mac_button.configure(state="disabled")
+            self.up_select_macaddr.configure(state="disabled")
     
 class MidFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -240,7 +250,7 @@ class UpLeftMidFrame(ctk.CTkFrame):
                         button_text_color=CINZA, corner_radius=CORNER, sound=True,
                         width=500, height=300)
             return
-        
+
         self.nome = nome
         self.idade = idade
         self.genero = genero
@@ -256,7 +266,10 @@ class UpLeftMidFrame(ctk.CTkFrame):
         self.edit_infos_button.grid(row=3, column=1, padx=15, pady=15, sticky=ctk.W)
 
         self.infos_saved = True
+
         gui_logger.logger.info("Informações do participante salvas com sucesso.")
+
+        return
     
     def edit_infos(self):
         gui_logger.logger.info("Habilitando edição das informações do participante.")
@@ -295,7 +308,7 @@ class UpRightMidFrame(ctk.CTkFrame):
         super().__init__(master, corner_radius=CORNER, border_width=BORDER_WIDTH_INSIDE, bg_color=ROSA, fg_color=AZUL_CLARO, border_color=AZUL, background_corner_colors=(ROSA, ROSA, ROSA, ROSA))
         set_grids(self, rows_conf={1:[0,1,2,3]}, column_conf={1:[0,2], 3:[1]}, grid_column=1, padx=20, pady=20)
 
-        self.load_file_label = ctk.CTkLabel(self, text="Arquivo de músicas:", font=BASE_FONT_MIN, text_color=CINZA, bg_color=TRANSPARENTE, fg_color=TRANSPARENTE)
+        self.load_file_label = ctk.CTkLabel(self, text="Arquivos de músicas:", font=BASE_FONT_MIN, text_color=CINZA, bg_color=TRANSPARENTE, fg_color=TRANSPARENTE)
         self.load_file_label.grid(row=0, column=0, padx=15, pady=15, sticky=ctk.E)
 
         self.music_file_folder_var = ctk.StringVar(value=r"Pasta contendo os arquivos de música")
@@ -331,7 +344,7 @@ class UpRightMidFrame(ctk.CTkFrame):
         self.salvar_arquivos_label = ctk.CTkLabel(self, text="Salvar dados em:", font=BASE_FONT_MIN, text_color=CINZA, bg_color=TRANSPARENTE, fg_color=TRANSPARENTE)
         self.salvar_arquivos_label.grid(row=2, column=0, padx=15, pady=15, sticky=ctk.E)
 
-        self.salvar_arquivos_var = ctk.StringVar(value=r"Diretório para salvar os dados")
+        self.salvar_arquivos_var = ctk.StringVar(value="Diretório para salvar os dados")
 
         self.salvar_arquivos_entry = ctk.CTkEntry(self, corner_radius=CORNER, border_width=BORDER_WIDTH, border_color=AZUL, width=420,
                                             bg_color=AZUL_CLARO, fg_color=ROSA, placeholder_text="Diretório para salvar os dados", 
@@ -407,6 +420,7 @@ class UpRightMidFrame(ctk.CTkFrame):
         else:
             threading.Thread(target=self.get_musics_from_folder, daemon=True).start()
             self.files_infos_label.configure(text="Arquivos de música e pasta de salvamento selecionados! Tudo certo.")
+            self.music_and_conditions_selected = True
 
     def get_musics_from_folder(self):
         """
@@ -516,11 +530,8 @@ class DownMidFrame(ctk.CTkFrame):
                                               command=self._on_stop)
         self.stop_button.grid(row=2, column=1, columnspan=2, padx=10, pady=10, sticky=ctk.NS)
 
-        # start periodic UI updates
-        try:
-            self.after(500, self._update_progress)
-        except Exception:
-            pass
+
+        self.after(500, self._update_progress)
 
     def _format_time(self, secs: float) -> str:
         try:
@@ -556,17 +567,36 @@ class DownMidFrame(ctk.CTkFrame):
                 player.stop()
         except Exception:
             pass
+        
+    def set_volume(self, percentage):
+        """
+        Define o volume do player de música. 
+        O valor é garantido para ficar entre 0 e 100.
+        """
+        # Garante que o valor digitado fique estritamente entre 0 e 100
+        percentage = max(0, min(100, percentage))
+        os_name = platform.system()
+
+        try:
+            if os_name == 'Windows':
+                
+                
+                # Obtém o dispositivo de áudio principal (alto-falantes)
+                device = AudioUtilities.GetSpeakers()
+                
+                # Na nova API do pycaw, acessamos a interface de volume diretamente
+                volume = device.EndpointVolume
+                
+                # Ajusta o volume (aceita escala de 0.0 a 1.0)
+                volume.SetMasterVolumeLevelScalar(percentage / 100.0, None)
+        except Exception as e:
+            gui_logger.logger.error(f"Erro ao ajustar volume no Windows: {e}")
 
     def _on_volume_change(self, value):
-        player = self._get_player()
+        #gui_logger.logger.info(f"Value = {value}%")
         try:
-            vol = float(value) / 100.0
             self.music_volume_label.configure(text=f"Volume: {int(float(value))}%")
-            try:
-                import pygame
-                pygame.mixer.music.set_volume(vol)
-            except Exception:
-                pass
+            self.set_volume(int(value))
         except Exception:
             pass
 
@@ -605,6 +635,8 @@ class DownFrame(ctk.CTkFrame):
         super().__init__(master, corner_radius=CORNER, border_width=BORDER_WIDTH, bg_color=AZUL, fg_color=ROSA, border_color=AZUL)
         set_grids(self, rows_conf={1:[0,1,2]}, column_conf={1:[0,1,2]}, grid_row=2)
 
+        self.master = master
+
         self.exp_progress_music_label = ctk.CTkLabel(self, text="Música: 0 de 20", font=BASE_FONT_MIN, text_color=CINZA, bg_color=TRANSPARENTE, fg_color=TRANSPARENTE)
         self.exp_progress_music_label.grid(row=0, column=0, padx=15, pady=10, sticky=ctk.W)
 
@@ -622,22 +654,25 @@ class DownFrame(ctk.CTkFrame):
         self.button_comecar_img = ctk.CTkImage(light_image=bt_comeca_img, dark_image=bt_comeca_img, size=(bt_comeca_img.width, bt_comeca_img.height))
         self.button_comecar_img_dim = ctk.CTkImage(light_image=bt_comeca_img_dim, dark_image=bt_comeca_img_dim, size=(bt_comeca_img_dim.width, bt_comeca_img_dim.height))
 
-        self.comecar_bt = ctk.CTkButton(self, image=self.button_comecar_img,bg_color=TRANSPARENTE, fg_color=TRANSPARENTE, text="", hover=False)
+        self.comecar_bt = ctk.CTkButton(self, image=self.button_comecar_img,bg_color=TRANSPARENTE, fg_color=TRANSPARENTE, text="", hover=False, command=self.comecar_experimento)
         self.comecar_bt.grid(row=0, rowspan=3, column=2, pady=20, padx=20, sticky=NSE)
         self.comecar_bt.bind('<Enter>', lambda event:self.comecar_bt.configure(image=self.button_comecar_img_dim))
         self.comecar_bt.bind('<Leave>', lambda event:self.comecar_bt.configure(image=self.button_comecar_img))
 
-        def comecar_experimento():
-            self.down_infos_label.configure(text="Iniciando experimento...")
-            # aqui você pode chamar a função que inicia o experimento, passando os parâmetros necessários
-            # por exemplo: start_experiment(self.music_file_folder.get(), self.conditions_file.get(), self.salvar_arquivos_var.get())
+    def comecar_experimento(self):
+        self.down_infos_label.configure(text="Iniciando experimento...")
+        # aqui você pode chamar a função que inicia o experimento, passando os parâmetros necessários
+        # por exemplo: start_experiment(self.music_file_folder.get(), self.conditions_file.get(), self.salvar_arquivos_var.get())
+
+    
+    #def pick_one_music(self, music_name: str):
+    #    self.music_name_label.configure(text=f"Música: {music_name}")
 
 
-
-        def update_experiment_progress(self, music_prog: str, pausas_prog: str, ruido_prog: str):
-            self.exp_progress_music_label.configure(text=f"Música: {music_prog}")
-            self.exp_progress_pausas_label.configure(text=f"Pausa: {pausas_prog}")
-            self.exp_progress_ruido_label.configure(text=f"Ruído: {ruido_prog}")
+    def update_experiment_progress(self, music_prog: str, pausas_prog: str, ruido_prog: str):
+        self.exp_progress_music_label.configure(text=f"Música: {music_prog}")
+        self.exp_progress_pausas_label.configure(text=f"Pausa: {pausas_prog}")
+        self.exp_progress_ruido_label.configure(text=f"Ruído: {ruido_prog}")
 
 if __name__ == "__main__":
     app = Compasso()
