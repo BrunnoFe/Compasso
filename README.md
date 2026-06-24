@@ -96,12 +96,12 @@ Exemplo:
 | branco_01.wav   | ruido   |
 
 > **Importante:**
-> - O valor da coluna `musica` deve **bater exatamente** com o nome do arquivo na pasta.
->   Se uma música não tiver linha correspondente, o programa avisa e interrompe a
->   verificação — corrija a planilha e recarregue.
-> - Os contadores **Música / Pausa / Ruído** da tela são preenchidos a partir da coluna
->   `fator`: valores que contêm "pausa" contam como pausa, "ruido"/"ruído" como ruído, e
->   qualquer outro valor como música.
+> O valor da coluna `musica` deve **bater exatamente** com o nome do arquivo na pasta.
+> Se uma música não tiver linha correspondente, o programa avisa e interrompe a
+> verificação — corrija a planilha e recarregue.
+> Os contadores **Música / Pausa / Ruído** da tela são preenchidos a partir da coluna
+> `fator`: valores que contêm "pausa" contam como pausa, "ruido"/"ruído" como ruído, e
+> qualquer outro valor como música.
 
 ---
 
@@ -215,11 +215,11 @@ O botão **começar** só habilita quando **todos** estão satisfeitos:
 
 ## Onde os dados são salvos
 
-| O quê                  | Local                                                                 |
-|------------------------|-----------------------------------------------------------------------|
-| **Dados do experimento** | `Documentos/Compasso/data/` (ou a pasta que você escolher em "Salvar dados em") |
-| **Logs por categoria**   | `%LOCALAPPDATA%\Compasso\logs\<categoria>\` (Windows)               |
-| **Arquivo central de erros** | `%LOCALAPPDATA%\Compasso\errors.log`                            |
+| O quê                        | Local                                                                           |
+|------------------------------|---------------------------------------------------------------------------------|
+| **Dados do experimento**     | `Documentos/Compasso/data/` (ou a pasta que você escolher em "Salvar dados em") |
+| **Logs por categoria**       | `%LOCALAPPDATA%\Compasso\logs\<categoria>\` (Windows)                           |
+| **Arquivo central de erros** | `%LOCALAPPDATA%\Compasso\errors.log`                                            |
 
 As pastas são criadas automaticamente na primeira execução. Em macOS/Linux, os logs ficam
 no diretório de dados do sistema (`~/Library/Application Support/Compasso` ou
@@ -241,11 +241,11 @@ final** da faixa, a partir do mesmo conteúdo.
 
 ### Colunas (nesta ordem exata)
 
-| Coluna       | Descrição                                                                                  |
-|--------------|--------------------------------------------------------------------------------------------|
-| `timestamp`  | Segundos desde o início da contagem regressiva (relógio LSL — mesmo das amostras).         |
-| `signal`     | Valor do sensor do BITalino no canal selecionado.                                          |
-| `markers`    | Vazio, exceto nas linhas dos eventos: `countdown_start`, `music_start`, `music_end`, `stop`. |
+| Coluna       | Descrição                                                                                   |
+|--------------|---------------------------------------------------------------------------------------------|
+| `timestamp`  | Segundos desde o início da contagem regressiva (relógio LSL — mesmo das amostras).          |
+| `signal`     | Valor do sensor do BITalino no canal selecionado.                                           |
+| `markers`    | Vazio, exceto nas linhas dos eventos: `countdown_start`, `music_start`, `music_end`, `stop` |
 | `music_file` | Preenchido **apenas** na linha `music_start` (nome do arquivo da faixa).                    |
 | `fator`      | Preenchido **apenas** na linha `music_start` (condição daquela faixa).                      |
 
@@ -269,7 +269,7 @@ final** da faixa, a partir do mesmo conteúdo.
 ## Solução de problemas
 
 | Sintoma | Causa provável / solução |
-|---|---|
+|---------|--------------------------|
 | **"começar" não habilita** | Falta um dos cinco pré-requisitos. Verifique conexão, dados do participante, pasta de músicas, planilha de condições e diretório de saída. |
 | **Erro ao conectar o BITalino** | O **Lab Streaming Layer** não está ativo no OpenSignals, ou o dispositivo não está transmitindo. Reative e tente novamente. |
 | **Nenhum dispositivo no escaneamento** | Bluetooth desligado ou BITalino fora de alcance/desligado. Ligue o Bluetooth e reescaneie. |
