@@ -58,7 +58,7 @@ class UpFrame(ctk.CTkFrame):
     def _on_channel_change(self, value: str):
         """Atualiza o canal LSL usado na coluna 'signal' (padrão 0 se inválido)."""
         try:
-            self.ctx.signal_channel = int(value) - 1
+            self.ctx.signal_channel = int(value)
         except (TypeError, ValueError):
             self.ctx.signal_channel = 0
         gui_logger.logger.info(f"Canal de sinal selecionado: {self.ctx.signal_channel}")
