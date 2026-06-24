@@ -47,7 +47,7 @@ class ExperimentRunner:
         self._order = []
         self._recorder = None
         self._thread = None
-        self._running = False
+        self._running = False 
         self._done = {"musica": 0, "pausa": 0, "ruido": 0}
 
     def is_running(self) -> bool:
@@ -87,7 +87,7 @@ class ExperimentRunner:
         rec = self._recorder
         if rec is not None:
             try:
-                rec.add_marker("stop", local_clock())
+                rec.add_marker("stop", local_clock(), music_file=self.music_name, fator=self.music_fator)
                 rec.finalize()
             except Exception as e:
                 experiment_logger.logger.error(f"Erro ao finalizar arquivo no stop: {e}")
@@ -125,9 +125,9 @@ class ExperimentRunner:
         self._finish()
 
     def _run_track(self, path: str, totals: dict) -> None:
-        name = os.path.basename(path)
-        fator = self.ctx.music_condition_mapping.get(path, "")
-        cat = _classify_condition(fator)
+        self.music_name = os.path.basename(path)
+        self.music_fator = self.ctx.music_condition_mapping.get(path, "")
+        cat = _classify_condition(self.music_fator)
 
         self._set_button("rodando")
 
@@ -136,13 +136,13 @@ class ExperimentRunner:
         recorder = LSLRecorder(self.ctx.bitalino, self.ctx.signal_channel, csv_path)
         self._recorder = recorder
         t0 = recorder.start()
-        recorder.add_marker("countdown_start", t0)
+        recorder.add_marker("countdown_start", t0, music_file=self.music_name, fator=self.music_fator)
 
         # 2) contagem regressiva de 10 s
         for remaining in range(self.COUNTDOWN_SECONDS, 0, -1):
             if self._stop_event.is_set():
                 return
-            self._post_status(f"Preparando '{name}' — iniciando em {remaining}s")
+            self._post_status(f"Preparando '{self.music_name}' — iniciando em {remaining}s")
             time.sleep(1.0)
         if self._stop_event.is_set():
             return
@@ -150,16 +150,16 @@ class ExperimentRunner:
         # 3) início da música
         if not self.ctx.player.load(path):
             experiment_logger.logger.error(f"Falha ao carregar áudio; pulando faixa: {path}")
-            self._post_status(f"Falha ao carregar '{name}'; pulando faixa.")
+            self._post_status(f"Falha ao carregar '{self.music_name}'; pulando faixa.")
             recorder.stop()
             recorder.finalize()
             self._recorder = None
             return
         ts_start = local_clock()
-        recorder.add_marker("music_start", ts_start, music_file=name, fator=fator)
+        recorder.add_marker("music_start", ts_start, music_file=self.music_name, fator=self.music_fator)
         self.ctx.player.play()
-        self._post_current_music(f"Música: {name}")
-        self._post_status(f"Reproduzindo: {name}")
+        self._post_current_music(f"Música: {self.music_name}")
+        self._post_status(f"Reproduzindo: {self.music_name}")
 
         # 4) aguarda o fim da faixa (ou stop)
         self._wait_track_end()
@@ -168,7 +168,7 @@ class ExperimentRunner:
 
         # 5) fim da música + finalização do arquivo
         ts_end = local_clock()
-        recorder.add_marker("music_end", ts_end)
+        recorder.add_marker("music_end", ts_end, music_file=self.music_name, fator=self.music_fator)
         recorder.stop()
         recorder.finalize()
         self._recorder = None
