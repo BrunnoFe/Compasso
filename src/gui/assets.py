@@ -35,3 +35,25 @@ class AppImages:
         self.rodando_dim = load_image(_asset("rodando_dim.png"), fallback=self.comecar_dim)
         self.continuar = load_image(_asset("continuar.png"), fallback=self.comecar)
         self.continuar_dim = load_image(_asset("continuar_dim.png"), fallback=self.comecar_dim)
+
+        # Uniformiza o tamanho de cada grupo de imagens trocadas no mesmo botão.
+        # Os PNGs originais diferem por 1–2 px (hover) ou ~8 px (estados do botão
+        # principal); como o tamanho do botão acompanha o da imagem, a troca causava
+        # um "pulo"/redimensionamento visível a cada hover/clique/mudança de estado.
+        self._normalize_sizes((self.conect_bitalino, self.conect_bitalino_dim, self.conectado))
+        self._normalize_sizes((self.comecar, self.comecar_dim, self.rodando,
+                               self.rodando_dim, self.continuar, self.continuar_dim))
+
+    @staticmethod
+    def _normalize_sizes(images):
+        """Força todas as imagens do grupo a terem o tamanho da primeira válida.
+
+        Evita que a troca de imagem (hover/estado) altere o tamanho do botão e
+        dispare um reflow do layout (o "glitch" de redimensionamento ao clicar).
+        """
+        ref = next((img.cget("size") for img in images if img is not None), None)
+        if ref is None:
+            return
+        for img in images:
+            if img is not None and img.cget("size") != ref:
+                img.configure(size=ref)

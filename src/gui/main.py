@@ -74,6 +74,10 @@ class Compasso(ctk.CTk):
         if errors:
             messagebox.showerror("Arquivo inválido", "O arquivo de configuração contém problemas:\n\n" + "\n".join(errors))
             return
+        if data is None:
+            messagebox.showerror("Erro", "Falha ao carregar o arquivo de configuração.")
+            return
+        gui_logger.logger.info(f"Configuração carregada: {path}")
         self._set_current_config(path, data)
         self.apply_config(data)
         self._show_temp_status("Configuração carregada com sucesso.", 3000)
@@ -97,6 +101,9 @@ class Compasso(ctk.CTk):
         data, errors = config_manager.load_config(path)
         if errors:
             gui_logger.logger.warning(f"Última configuração ignorada (inválida): {path}")
+            return
+        if data is None:
+            gui_logger.logger.warning(f"Última configuração ignorada (falha ao carregar): {path}")
             return
         self._set_current_config(path, data)
         self.apply_config(data)

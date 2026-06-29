@@ -46,6 +46,7 @@ def bind_hover_images(button, normal, dim, only_when_enabled: bool = False) -> N
         button.bind('<Enter>', lambda event: button.configure(image=dim) if button.cget("state") != "disabled" else None)
     else:
         button.bind('<Enter>', lambda event: button.configure(image=dim))
+
     button.bind('<Leave>', lambda event: button.configure(image=normal))
 
 
@@ -53,7 +54,7 @@ def styled_label(master, **kwargs):
     """CTkLabel com o estilo padrão (fonte mínima, texto cinza, fundo transparente)."""
     opts = dict(font=BASE_FONT_MIN, text_color=CINZA, bg_color=TRANSPARENTE, fg_color=TRANSPARENTE)
     opts.update(kwargs)
-    return ctk.CTkLabel(master, **opts)
+    return ctk.CTkLabel(master, **opts) # type: ignore
 
 
 def styled_button(master, **kwargs):
@@ -61,7 +62,7 @@ def styled_button(master, **kwargs):
     opts = dict(corner_radius=CORNER, border_width=BORDER_WIDTH, border_color=AZUL,
                 hover_color=AZUL, font=BASE_FONT_MIN, text_color=CINZA)
     opts.update(kwargs)
-    return ctk.CTkButton(master, **opts)
+    return ctk.CTkButton(master, **opts) # type: ignore
 
 
 def styled_entry(master, **kwargs):
@@ -70,7 +71,7 @@ def styled_entry(master, **kwargs):
                 bg_color=AZUL_CLARO, fg_color=ROSA, placeholder_text_color=CINZA,
                 font=BASE_FONT_MIN, text_color=CINZA)
     opts.update(kwargs)
-    return ctk.CTkEntry(master, **opts)
+    return ctk.CTkEntry(master, **opts) # type: ignore
 
 
 def styled_combobox(master, **kwargs):
@@ -81,4 +82,5 @@ def styled_combobox(master, **kwargs):
                 dropdown_text_color=CINZA, justify=ctk.CENTER, font=BASE_FONT_MIN,
                 dropdown_font=BASE_FONT_MIN)
     opts.update(kwargs) #atualiza com os kwargs passados pelo chamador (ex: variable, values, state, width)
-    return ctk.CTkComboBox(master, **opts) #passa os kwargs atualizados para o construtor do CTkComboBox
+    return ctk.CTkComboBox(master, **opts) # type: ignore
+#passa os kwargs atualizados para o construtor do CTkComboBox

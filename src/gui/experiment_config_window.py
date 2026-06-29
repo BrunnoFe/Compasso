@@ -187,7 +187,9 @@ class ExperimentConfigWindow(ctk.CTkToplevel):
 
         if self.on_saved is not None:
             self.on_saved(path, values)
+        self.withdraw()
         self.destroy()
 
     def _on_cancelar(self):
+        self.withdraw()
         self.destroy()

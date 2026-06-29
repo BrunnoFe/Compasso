@@ -43,6 +43,8 @@ def set_system_volume(percentage) -> bool:
             if AudioUtilities is None:
                 return _log_unavailable("pycaw ausente")
             device = AudioUtilities.GetSpeakers()
+            if device is None:
+                return _log_unavailable("dispositivo de áudio não encontrado")
             volume = device.EndpointVolume  # nova API do pycaw: interface acessada diretamente
             volume.SetMasterVolumeLevelScalar(percentage / 100.0, None)  # escala 0.0–1.0
             return True

@@ -31,7 +31,7 @@ class UpLeftMidFrame(ctk.CTkFrame):
     """Formulário com os dados do participante (nome, idade, gênero)."""
 
     def __init__(self, master, ctx):
-        super().__init__(master, corner_radius=CORNER, border_width=BORDER_WIDTH_INSIDE, bg_color=ROSA, fg_color=AZUL_CLARO, border_color=AZUL, background_corner_colors=(ROSA, ROSA, ROSA, ROSA))
+        super().__init__(master, corner_radius=CORNER, border_width=BORDER_WIDTH_INSIDE, bg_color=ROSA, fg_color=AZUL_CLARO, border_color=AZUL, background_corner_colors=(ROSA, ROSA, ROSA, ROSA)) # type: ignore
         set_grids(self, rows_conf={1: [0, 1, 2, 3]}, column_conf={0: [0], 3: [1]}, padx=20, pady=20)
 
         self.ctx = ctx
@@ -102,7 +102,7 @@ class UpRightMidFrame(ctk.CTkFrame):
     """Carregamento da pasta de músicas, do Excel de condições e do diretório de saída."""
 
     def __init__(self, master, ctx):
-        super().__init__(master, corner_radius=CORNER, border_width=BORDER_WIDTH_INSIDE, bg_color=ROSA, fg_color=AZUL_CLARO, border_color=AZUL, background_corner_colors=(ROSA, ROSA, ROSA, ROSA))
+        super().__init__(master, corner_radius=CORNER, border_width=BORDER_WIDTH_INSIDE, bg_color=ROSA, fg_color=AZUL_CLARO, border_color=AZUL, background_corner_colors=(ROSA, ROSA, ROSA, ROSA)) # type: ignore
         set_grids(self, rows_conf={1: [0, 1, 2]}, column_conf={1: [0, 2], 3: [1]}, grid_column=1, padx=20, pady=20)
 
         self.ctx = ctx
@@ -248,32 +248,35 @@ class DownMidFrame(ctk.CTkFrame):
     """Controles de reprodução: nome da faixa, volume, barra de progresso e parar."""
 
     def __init__(self, master, ctx):
-        super().__init__(master, corner_radius=CORNER, border_width=BORDER_WIDTH_INSIDE, bg_color=ROSA, fg_color=AZUL_CLARO, border_color=AZUL, background_corner_colors=(ROSA, ROSA, ROSA, ROSA))
+        super().__init__(master, corner_radius=CORNER, border_width=BORDER_WIDTH_INSIDE, bg_color=ROSA, fg_color=AZUL_CLARO, border_color=AZUL, background_corner_colors=(ROSA, ROSA, ROSA, ROSA)) # type: ignore
         set_grids(self, rows_conf={1: [0, 1, 2]}, column_conf={1: [0, 1, 2, 3]}, grid_row=1, columnspan=2, padx=20, pady=20)
 
         self.ctx = ctx
 
-        self.music_name_label = styled_label(self, textvariable=self.ctx.current_music_text, font=BASE_FONT)
-        self.music_name_label.grid(row=0, column=0, columnspan=2, padx=20, pady=15, ipadx=10, sticky=ctk.W)
+        # Rótulos reativos com largura FIXA (width+wraplength p/ textos longos, width simples
+        # p/ textos curtos): travar a largura evita que mudar o texto redimensione o widget
+        # e dispare reflow do layout (o "glitch" de redimensionamento ao interagir).
+        self.music_name_label = styled_label(self, textvariable=self.ctx.current_music_text, font=BASE_FONT, width=520, wraplength=520, anchor=ctk.W)
+        self.music_name_label.grid(row=0, column=0, columnspan=2, padx=20, pady=15, ipadx=10, sticky=ctk.EW)
 
         self.music_volume = ctk.CTkSlider(self, from_=0, to=100, number_of_steps=100, border_width=BORDER_WIDTH, border_color=AZUL, bg_color=AZUL_CLARO, fg_color=ROSA,
                                           button_color=AMARELO, button_hover_color=AMARELO_ESC, progress_color=AMARELO, command=self._on_volume_change)
         self.music_volume.grid(row=0, column=3, padx=20, pady=15, sticky=ctk.EW)
 
-        self.music_volume_label = styled_label(self, textvariable=self.ctx.volume_text, font=BASE_FONT)
-        self.music_volume_label.grid(row=0, column=2, padx=10, pady=15, sticky=ctk.E)
+        self.music_volume_label = styled_label(self, textvariable=self.ctx.volume_text, font=BASE_FONT, width=150, anchor=ctk.E)
+        self.music_volume_label.grid(row=0, column=2, padx=10, pady=15, sticky=ctk.EW)
 
-        self.music_progress = ctk.CTkProgressBar(self, height=10, border_width=BORDER_WIDTH, border_color=AZUL, bg_color=AZUL_CLARO, fg_color=ROSA, progress_color=CINZA)
-        self.music_progress.grid(row=1, column=0, columnspan=4, padx=80, pady=20, sticky=ctk.NSEW)
+        self.music_time_begin = styled_label(self, textvariable=self.ctx.time_begin_text, font=BASE_FONT, width=90, anchor=ctk.E)
+        self.music_time_begin.grid(row=1, column=3, padx=20, pady=10, sticky=ctk.EW)
 
-        self.music_time_begin = styled_label(self, textvariable=self.ctx.time_begin_text, font=BASE_FONT)
-        self.music_time_begin.grid(row=1, column=3, padx=20, pady=10, sticky=ctk.E)
-
-        self.music_time_end = styled_label(self, textvariable=self.ctx.time_end_text, font=BASE_FONT)
-        self.music_time_end.grid(row=1, column=0, padx=20, pady=10, sticky=ctk.W)
+        self.music_time_end = styled_label(self, textvariable=self.ctx.time_end_text, font=BASE_FONT, width=90, anchor=ctk.W)
+        self.music_time_end.grid(row=1, column=0, padx=20, pady=10, sticky=ctk.EW)
 
         self.stop_button = styled_button(self, text="Parar", width=80, bg_color=AZUL_CLARO, fg_color=ROSA, command=self._on_stop)
         self.stop_button.grid(row=2, column=1, columnspan=2, padx=10, pady=10, sticky=ctk.NS)
+
+        self.music_progress = ctk.CTkProgressBar(self, height=10, border_width=BORDER_WIDTH, border_color=AZUL, bg_color=AZUL_CLARO, fg_color=ROSA, progress_color=CINZA)
+        self.music_progress.grid(row=1, column=0, columnspan=4, padx=80, pady=20, sticky=ctk.NSEW)
 
         self.after(500, self._update_progress)
 

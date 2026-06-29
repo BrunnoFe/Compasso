@@ -15,14 +15,18 @@ class DownFrame(ctk.CTkFrame):
 
         self.ctx = ctx
 
-        self.exp_progress_music_label = styled_label(self, textvariable=self.ctx.music_counter)
-        self.exp_progress_music_label.grid(row=0, column=0, padx=15, pady=10, sticky=ctk.W)
+        # Rótulos reativos com largura FIXA: contadores têm texto curto e limitado
+        # (largura mínima basta); o status é longo e variável, então usa width+wraplength
+        # para travar a largura (mín. e máx.) e quebrar linha em vez de alargar. Sem isso,
+        # mudar o texto redimensiona o rótulo e dispara reflow do layout (o "glitch").
+        self.exp_progress_music_label = styled_label(self, textvariable=self.ctx.music_counter, width=200, anchor=ctk.W)
+        self.exp_progress_music_label.grid(row=0, column=0, padx=15, pady=10, sticky=ctk.EW)
 
-        self.exp_progress_ruido_label = styled_label(self, textvariable=self.ctx.ruido_counter)
-        self.exp_progress_ruido_label.grid(row=1, column=0, padx=15, pady=10, sticky=ctk.W)
+        self.exp_progress_ruido_label = styled_label(self, textvariable=self.ctx.ruido_counter, width=200, anchor=ctk.W)
+        self.exp_progress_ruido_label.grid(row=1, column=0, padx=15, pady=10, sticky=ctk.EW)
 
-        self.down_infos_label = styled_label(self, textvariable=self.ctx.status_text)
-        self.down_infos_label.grid(row=1, column=1, padx=15, pady=10, sticky=NSE)
+        self.down_infos_label = styled_label(self, textvariable=self.ctx.status_text, width=480, wraplength=480, anchor=ctk.E)
+        self.down_infos_label.grid(row=1, column=1, padx=15, pady=10, sticky=ctk.NSEW)
 
         # imagens dos três estados do botão principal (comecar -> rodando -> continuar),
         # já carregadas e cacheadas em ctx.images (com fallback para "comecar").
@@ -36,7 +40,7 @@ class DownFrame(ctk.CTkFrame):
         self._comecar_enabled = None   # cache do último estado aplicado (evita flicker)
 
         self.comecar_bt = ctk.CTkButton(self, image=imgs.comecar, bg_color=TRANSPARENTE, fg_color=TRANSPARENTE, text="", hover=False, command=self.comecar_experimento)
-        self.comecar_bt.grid(row=0, rowspan=3, column=2, pady=20, padx=20, sticky=NSE)
+        self.comecar_bt.grid(row=0, rowspan=2, column=2, pady=20, padx=20, sticky=NSE)
 
         # expõe a troca de estado do botão para o runner (chamada via ctx.run_after)
         self.ctx.set_button_state = self._set_button_state

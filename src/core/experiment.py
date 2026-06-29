@@ -108,7 +108,7 @@ class ExperimentRunner:
             os.makedirs(self._session_dir, exist_ok=True)
         except OSError as e:
             experiment_logger.logger.error(f"Não foi possível criar a pasta da sessão '{self._session_dir}': {e}")
-            self._post_status("Erro ao criar a pasta de salvamento; experimento abortado.")
+            self._post_status("Erro ao criar a pasta de salvamento. Experimento abortado.")
             self._finish()
             return
         experiment_logger.logger.info(f"Pasta da sessão criada: {self._session_dir}")
@@ -144,7 +144,9 @@ class ExperimentRunner:
 
         # 1) aquisição + captura de t0 (drena buffer -> t0 -> primeira linha, sem lacuna)
         filename = build_track_filename(order, len(self._order), self.music_name)
-        csv_path = os.path.join(self._session_dir, filename + ".csv")
+
+        csv_path = os.path.join(self._session_dir, filename + ".csv") #type: ignore
+        experiment_logger.logger.info(f"Preparando aquisição LSL para '{self.music_name}' (fator: '{self.music_fator}') -> {csv_path}")
         recorder = LSLRecorder(self.ctx.bitalino, self.ctx.signal_channel, csv_path)
         self._recorder = recorder
         t0 = recorder.start()

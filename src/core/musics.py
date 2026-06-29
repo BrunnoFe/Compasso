@@ -54,7 +54,7 @@ def match_conditions(music_files: list, conditions_path: str):
     mapping = {}
     for music in music_files:
         music_name = os.path.basename(music)
-        fatores = conditions.loc[conditions['musica'] == music_name, 'fator'].values
+        fatores = conditions.loc[conditions['musica'] == music_name, 'fator'].values #type: ignore
         if len(fatores) == 0:
             raise MissingConditionError(music_name)
         mapping[music] = fatores[0]

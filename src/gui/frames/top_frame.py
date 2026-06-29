@@ -12,7 +12,7 @@ class UpFrame(ctk.CTkFrame):
     """Painel superior: logo, seleção de MAC/canal, escaneamento e conexão do Bitalino."""
 
     def __init__(self, master, ctx):
-        super().__init__(master, corner_radius=CORNER, border_width=BORDER_WIDTH, border_color=AZUL, bg_color=AZUL, fg_color=ROSA, background_corner_colors=(AZUL, AZUL, AZUL, AZUL))
+        super().__init__(master, corner_radius=CORNER, border_width=BORDER_WIDTH, border_color=AZUL, bg_color=AZUL, fg_color=ROSA, background_corner_colors=(AZUL, AZUL, AZUL, AZUL)) # type: ignore
         set_grids(self, rows_conf={1: [0]}, column_conf={2: [0], 1: [1, 2]})
 
         self.ctx = ctx
@@ -43,7 +43,7 @@ class UpFrame(ctk.CTkFrame):
 
         self.disconnect_button = styled_button(self.scan_controls, text="Desconectar",
                                                bg_color=TRANSPARENTE, fg_color=ROSA,
-                                               command=self.disconnect_bitalino)
+                                               command=self.disconnect_bitalino, state="disabled")
         self.disconnect_button.grid(row=0, column=2, padx=(8, 0), sticky=ctk.S)
 
         self.button_conectbt_img = imgs.conect_bitalino
@@ -92,6 +92,7 @@ class UpFrame(ctk.CTkFrame):
             self.button_conect_bitalino.unbind('<Leave>')
             self.button_conect_bitalino.configure(state="disabled", image=self.button_conectbt_img_conectado)
             self.up_select_macaddr.configure(state="disabled")
+            self.disconnect_button.configure(state="normal")
 
     def disconnect_bitalino(self):
         """Encerra manualmente a conexão LSL com o Bitalino e restaura a UI de conexão.
@@ -118,3 +119,4 @@ class UpFrame(ctk.CTkFrame):
         self.button_conect_bitalino.configure(state="normal", image=self.button_conectbt_img)
         bind_hover_images(self.button_conect_bitalino, self.button_conectbt_img, self.button_conectbt_img_dim)
         self.up_select_macaddr.configure(state="normal")
+        self.disconnect_button.configure(state="disabled")

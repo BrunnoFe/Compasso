@@ -39,5 +39,5 @@ def _configure_error_log() -> None:
                                   encoding=ENCODING_FORMAT, delay=True)
     handler.setLevel(logging.WARNING)
     handler.setFormatter(logging.Formatter(LOG_FORMAT))
-    handler._compasso_errors = True  # marca para evitar duplicação
+    handler._compasso_errors = True  #type: ignore  # marca para evitar duplicação
     root.addHandler(handler)

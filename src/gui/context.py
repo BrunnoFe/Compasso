@@ -34,8 +34,8 @@ class AppContext:
         # serviços / estado
         self.player: Player = Player()
         self.bitalino = None          # StreamInlet | None
-        self.mac_addr = None          # str | None
-        self.signal_channel = 0       # índice do canal LSL usado na coluna 'signal'
+        self.mac_addr: str | None = None          # str | None
+        self.signal_channel: int = 0       # índice do canal LSL usado na coluna 'signal'
         self.runner = None            # ExperimentRunner | None
         self.images: Optional["AppImages"] = None   # criado por Compasso após o root
 
@@ -50,11 +50,11 @@ class AppContext:
         self.infos_saved = False
 
         # arquivos / condições / saída
-        self.music_folder = None
-        self.conditions_file = None
-        self.save_dir = None
-        self.music_files = []
-        self.music_condition_mapping = {}
+        self.music_folder: str | None = None
+        self.conditions_file: str | None = None
+        self.save_dir: str | None = None
+        self.music_files: list = []
+        self.music_condition_mapping: dict = {}
 
         # textos reativos dos rótulos (qualquer frame faz .set())
         self.status_text = ctk.StringVar(value="Conecte o Bitalino")
@@ -90,6 +90,6 @@ class AppContext:
                 gui_logger.logger.error(f"Erro em run_async: {e}")
                 result = e
             if on_done is not None:
-                self.run_after(func=lambda: on_done(result))
+                self.run_after(func=lambda: on_done(result)) #type: ignore
 
         threading.Thread(target=runner, daemon=True).start()

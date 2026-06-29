@@ -3,11 +3,7 @@ import time
 
 from . import player_logger
 
-try:
-    import pygame
-except Exception:
-    pygame = None
-
+import pygame
 
 class Player:
     """Audio player with playlist support using pygame.mixer.
