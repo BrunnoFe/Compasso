@@ -81,6 +81,8 @@ class LSLRecorder:
         self.xlsx_path = os.path.splitext(csv_path)[0] + ".xlsx"
 
         self.t0 = None
+        # instante (time.monotonic) da última amostra recebida; lido pelo watchdog de conexão
+        self.last_sample_monotonic = None
         self._pending = []           # lista de marcadores ordenada por lsl_time
         self._lock = threading.Lock()
         self._stop_event = threading.Event()
@@ -95,6 +97,7 @@ class LSLRecorder:
         """
         self._drain_inlet()
         self.t0 = local_clock()
+        self.last_sample_monotonic = time.monotonic()
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
         recorder_logger.logger.info(f"Aquisição iniciada (t0={self.t0:.6f}, canal={self.channel}) -> {self.csv_path}")
@@ -160,6 +163,7 @@ class LSLRecorder:
 
                     if sample:
                         last_sample = (sample, ts)
+                        self.last_sample_monotonic = time.monotonic()
                         if not self._first_sample_logged:
                             recorder_logger.logger.info(f"Primeira amostra completa (verificação de canal): {sample}")
                             self._first_sample_logged = True

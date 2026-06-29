@@ -10,10 +10,7 @@ import subprocess
 
 from . import player_logger
 
-try:
-    from pycaw.pycaw import AudioUtilities
-except Exception:
-    AudioUtilities = None
+from pycaw.pycaw import AudioUtilities
 
 _unavailable_logged = False
 

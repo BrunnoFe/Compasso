@@ -54,6 +54,24 @@ class UpLeftMidFrame(ctk.CTkFrame):
         self.save_infos_button = styled_button(self, text="Salvar informações", bg_color=AZUL_CLARO, fg_color=ROSA, command=self.save_infos)
         self.save_infos_button.grid(row=3, column=1, padx=15, pady=15, sticky=NSE)
 
+        # expõe ao DownFrame o salvamento silencioso quando o form está preenchido mas não salvo
+        self.ctx.save_participant_infos_if_filled = self.save_infos_if_filled
+
+    def save_infos_if_filled(self) -> bool:
+        """Se o formulário está preenchido mas não salvo, salva em silêncio.
+
+        Retorna True somente se `save_infos` exibiu um erro de validação (formulário
+        preenchido porém inválido), para que o chamador aborte sem mensagem duplicada."""
+        if self.ctx.infos_saved:
+            return False
+        nome = self.name_entry.get().strip()
+        idade = self.idade_entry.get().strip()
+        genero = self.genero_entry.get().strip()
+        if not (nome and idade and genero):
+            return False  # incompleto: _validar_prerequisitos mostra a mensagem padrão
+        self.save_infos()
+        return not self.ctx.infos_saved
+
     def save_infos(self):
         nome = self.name_entry.get().strip()
         idade = self.idade_entry.get().strip()
@@ -271,11 +289,11 @@ class DownMidFrame(ctk.CTkFrame):
         self.music_volume.set(vol)
         self.ctx.volume_text.set(f"Volume: {vol}%")
 
-        self.music_time_begin = styled_label(self, textvariable=self.ctx.time_begin_text, font=BASE_FONT, width=90, anchor=ctk.E)
-        self.music_time_begin.grid(row=1, column=3, padx=20, pady=10, sticky=ctk.EW)
+        self.music_time_begin = styled_label(self, textvariable=self.ctx.time_begin_text, font=BASE_FONT, width=90, anchor=ctk.W)
+        self.music_time_begin.grid(row=1, column=0, padx=20, pady=10, sticky=ctk.EW)
 
-        self.music_time_end = styled_label(self, textvariable=self.ctx.time_end_text, font=BASE_FONT, width=90, anchor=ctk.W)
-        self.music_time_end.grid(row=1, column=0, padx=20, pady=10, sticky=ctk.EW)
+        self.music_time_end = styled_label(self, textvariable=self.ctx.time_end_text, font=BASE_FONT, width=90, anchor=ctk.E)
+        self.music_time_end.grid(row=1, column=3, padx=20, pady=10, sticky=ctk.EW)
 
         self.stop_button = styled_button(self, text="Parar", width=80, bg_color=AZUL_CLARO, fg_color=ROSA, command=self._on_stop)
         self.stop_button.grid(row=2, column=0, columnspan=4, padx=10, pady=10, sticky=ctk.NS)

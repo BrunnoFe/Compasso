@@ -1,4 +1,6 @@
 import re
+import time
+import threading
 
 from pylsl import (StreamInlet, resolve_byprop,
                    proc_clocksync, proc_dejitter, proc_monotonize)
@@ -65,6 +67,72 @@ def connectar_bitalino(mac_addr: str) -> StreamInlet | str:
         msg: str = 'Endereço MAC inválido. Selecione o endereço MAC do Bitalino.'
         connection_logger.logger.error(msg=msg)
         return msg
+
+
+class ConnectionWatchdog:
+    """Vigia a conexão com o BITalino em uma thread daemon separada.
+
+    Durante uma gravação, **lê** o instante da última amostra que o `LSLRecorder`
+    publica (via `ctx.runner.last_acquisition_monotonic()`) — não puxa amostras, para
+    não roubar dados que estão sendo gravados. Quando conectado mas ocioso (sem faixa em
+    gravação), faz uma sondagem leve (`pull_sample`) só para verificar se há fluxo.
+
+    Após `TIMEOUT` segundos sem nenhuma amostra, agenda `ctx.handle_connection_lost`
+    na thread da GUI. Lacunas curtas (< TIMEOUT) nunca disparam. Inativo enquanto
+    `ctx.bitalino` é None.
+    """
+
+    TIMEOUT = 15.0   # s sem amostras até considerar a conexão perdida
+    POLL = 1.0       # s entre verificações
+
+    def __init__(self, ctx):
+        self.ctx = ctx
+        self._stop_event = threading.Event()
+        self._thread = None
+        self._last_ok = None
+
+    def start(self) -> None:
+        self._stop_event.clear()
+        self._last_ok = time.monotonic()
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._thread.start()
+        connection_logger.logger.info("Watchdog de conexão iniciado.")
+
+    def stop(self) -> None:
+        self._stop_event.set()
+        if self._thread is not None and self._thread.is_alive():
+            self._thread.join(timeout=self.POLL + 1.0)
+        connection_logger.logger.info("Watchdog de conexão encerrado.")
+
+    def _run(self) -> None:
+        while not self._stop_event.wait(self.POLL):
+            inlet = self.ctx.bitalino
+            if inlet is None:                       # inativo quando desconectado
+                self._last_ok = time.monotonic()
+                continue
+
+            runner = self.ctx.runner
+            if runner is not None and runner.is_acquiring():
+                # gravando: lê o timestamp compartilhado (não puxa amostras)
+                ts = runner.last_acquisition_monotonic()
+                if ts is not None:
+                    self._last_ok = ts
+            else:
+                # ocioso / entre faixas: sondagem leve (dados não gravados, sem prejuízo)
+                try:
+                    sample, _ = inlet.pull_sample(timeout=0.5)
+                except Exception:
+                    sample = None
+                if sample:
+                    self._last_ok = time.monotonic()
+
+            if time.monotonic() - self._last_ok >= self.TIMEOUT:
+                connection_logger.logger.error(
+                    f"Sem amostras do BITalino por >= {self.TIMEOUT}s: conexão considerada perdida.")
+                cb = getattr(self.ctx, "handle_connection_lost", None)
+                if cb is not None:
+                    self.ctx.run_after(cb)
+                self._last_ok = time.monotonic()    # reset: permite disparar de novo
 
 
 if __name__ == '__main__':

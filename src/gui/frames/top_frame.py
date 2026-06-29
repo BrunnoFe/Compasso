@@ -5,7 +5,7 @@ from ..guiconfigs import set_grids
 from ..theme import (AZUL, AZUL_CLARO, BASE_FONT_MED, ROSA, CINZA, TRANSPARENTE,
                      BASE_FONT, BORDER_WIDTH, CORNER)
 from ..widgets import show_message, bind_hover_images, styled_label, styled_button, styled_combobox, styled_entry
-from src.core import connectar_bitalino
+from src.core import connectar_bitalino, ConnectionWatchdog
 
 
 class UpFrame(ctk.CTkFrame):
@@ -94,6 +94,11 @@ class UpFrame(ctk.CTkFrame):
             self.up_select_macaddr.configure(state="disabled")
             self.disconnect_button.configure(state="normal")
 
+            # inicia o watchdog de conexão (detecta perda de sinal por >= 15 s)
+            self.ctx.handle_connection_lost = self._handle_connection_lost
+            self.ctx.watchdog = ConnectionWatchdog(self.ctx)
+            self.ctx.watchdog.start()
+
     def disconnect_bitalino(self):
         """Encerra manualmente a conexão LSL com o Bitalino e restaura a UI de conexão.
 
@@ -104,6 +109,22 @@ class UpFrame(ctk.CTkFrame):
             show_message("Atenção", "Pare o experimento antes de desconectar o Bitalino.", icon="warning")
             return
 
+        self._teardown_connection()
+        gui_logger.logger.info("Bitalino desconectado manualmente pelo usuário.")
+        self.ctx.status_text.set("Bitalino desconectado")
+
+    def _teardown_connection(self):
+        """Encerra o watchdog e o stream, limpa o estado de conexão e restaura a UI.
+
+        Reutilizado pela desconexão manual e pela perda de conexão detectada pelo watchdog."""
+        watchdog = self.ctx.watchdog
+        if watchdog is not None:
+            try:
+                watchdog.stop()
+            except Exception as e:
+                gui_logger.logger.warning(f"Falha ao encerrar o watchdog: {e}")
+            self.ctx.watchdog = None
+
         inlet = self.ctx.bitalino
         if inlet is not None:
             try:
@@ -112,11 +133,21 @@ class UpFrame(ctk.CTkFrame):
                 gui_logger.logger.warning(f"Falha ao encerrar o stream do Bitalino: {e}")
         self.ctx.bitalino = None
         self.ctx.mac_addr = None
-        gui_logger.logger.info("Bitalino desconectado manualmente pelo usuário.")
-        self.ctx.status_text.set("Bitalino desconectado")
 
         # restaura o botão de conexão e o campo de MAC
         self.button_conect_bitalino.configure(state="normal", image=self.button_conectbt_img)
         bind_hover_images(self.button_conect_bitalino, self.button_conectbt_img, self.button_conectbt_img_dim)
         self.up_select_macaddr.configure(state="normal")
         self.disconnect_button.configure(state="disabled")
+
+    def _handle_connection_lost(self):
+        """Tratamento da perda de conexão sinalizada pelo watchdog (na thread da GUI).
+
+        Para o experimento em andamento (mesma rotina do botão "Parar", finalizando o
+        arquivo com a marca 'stop'), reseta o estado de conexão e avisa o usuário."""
+        runner = self.ctx.runner
+        if runner is not None and runner.is_running():
+            runner.stop()
+        self._teardown_connection()
+        self.ctx.status_text.set("Conexão com BITalino perdida")
+        show_message("Atenção", "Conexão com BITalino perdida. Verifique o sensor.", icon="warning")

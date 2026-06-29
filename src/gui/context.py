@@ -43,6 +43,14 @@ class AppContext:
         # ("comecar" | "rodando" | "continuar"); chamado pelo runner via post().
         self.set_button_state = None
 
+        # callback registrado pela UpLeftMidFrame: salva infos do participante em silêncio
+        # se o formulário estiver preenchido mas não salvo (usado pelo botão "começar").
+        self.save_participant_infos_if_filled = None
+
+        # watchdog de conexão do BITalino e callback de perda de conexão (top_frame).
+        self.watchdog = None
+        self.handle_connection_lost = None
+
         # dados do participante
         self.nome = None
         self.idade = None

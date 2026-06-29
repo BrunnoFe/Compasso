@@ -52,6 +52,15 @@ class ExperimentRunner:
     def is_running(self) -> bool:
         return self._running
 
+    def is_acquiring(self) -> bool:
+        """True enquanto há um recorder ativo puxando amostras (faixa em gravação)."""
+        return self._recorder is not None
+
+    def last_acquisition_monotonic(self):
+        """Instante (time.monotonic) da última amostra gravada, ou None se não há recorder."""
+        rec = self._recorder
+        return rec.last_sample_monotonic if rec is not None else None
+
     def start(self) -> None:
         """Embaralha a ordem das faixas e inicia a sessão em uma thread daemon."""
         if self._running:

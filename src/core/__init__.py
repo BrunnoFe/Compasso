@@ -7,7 +7,7 @@ recorder_logger = SetLogger(category='recorder', namelogger='recorderLogger')
 musics_logger = SetLogger(category='musics', namelogger='musicsLogger')
 config_logger = SetLogger(category='config', namelogger='configLogger')
 
-from .bitalino_connect import connectar_bitalino
+from .bitalino_connect import connectar_bitalino, ConnectionWatchdog
 from .recorder import LSLRecorder, build_session_dirname, build_track_filename
 from .experiment import ExperimentRunner
 from .musics import scan_music_files, match_conditions, MissingConditionError
@@ -22,6 +22,7 @@ __all__ = [
     'musics_logger',
     'config_logger',
     'connectar_bitalino',
+    'ConnectionWatchdog',
     'LSLRecorder',
     'build_session_dirname',
     'build_track_filename',
