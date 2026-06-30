@@ -1,8 +1,8 @@
 <img width="866" height="314" alt="gitlogo" src="https://github.com/user-attachments/assets/e5dad8b9-4276-4b4c-ae12-355560d0f385" />
 
-# Compasso
+# Com Passo
 
-**Compasso** é uma plataforma de pesquisa em psicofisiologia que sincroniza a reprodução de músicas com a aquisição contínua do sinal do **BITalino** (via OpenSignals + Lab Streaming Layer). Amostras e marcadores de evento compartilham um único relógio (`pylsl.local_clock()`), garantindo sincronia precisa entre o estímulo auditivo e os dados fisiológicos.
+**Com Passo** é uma plataforma de pesquisa em psicofisiologia que sincroniza a reprodução de músicas com a aquisição contínua do sinal do **BITalino** (via OpenSignals + Lab Streaming Layer). Amostras e marcadores de evento compartilham um único relógio (`pylsl.local_clock()`), garantindo sincronia precisa entre o estímulo auditivo e os dados fisiológicos.
 
 ---
 
@@ -61,7 +61,7 @@ A conexão com o BITalino **só funciona** se o OpenSignals estiver compartilhan
 3. Ative a opção **Lab Streaming Layer (LSL)**.
 4. Coloque o dispositivo em modo de aquisição/streaming (botão de *play* do OpenSignals), de forma que o BITalino esteja transmitindo amostras.
 
-> Sem o LSL ativo e transmitindo, a conexão do Compasso falha com uma mensagem de erro (timeout de ~2 s ao procurar a stream).
+> Sem o LSL ativo e transmitindo, a conexão do Com Passo falha com uma mensagem de erro (timeout de ~2 s ao procurar a stream).
 
 <img width="1115" height="761" alt="opensignals" src="https://github.com/user-attachments/assets/e68e7110-96a6-492d-9be2-84ddcad987e3" />
 
@@ -73,7 +73,7 @@ A conexão com o BITalino **só funciona** se o OpenSignals estiver compartilhan
 
 O menu **Experimento** (barra de menus da janela principal) centraliza toda a configuração do experimento em arquivos `.config` reutilizáveis. Cada `.config` é um arquivo JSON que armazena caminhos, quantidades esperadas e parâmetros do BITalino — basta abri-lo em sessões futuras para restaurar toda a configuração de uma vez.
 
-> **Carga automática ao iniciar:** o Compasso carrega silenciosamente o último `.config` usado (se o arquivo ainda existir e for válido) e aplica todos os campos automaticamente. Em sessões recorrentes com o mesmo protocolo, basta abrir o programa e clicar em **começar**.
+> **Carga automática ao iniciar:** o Com Passo carrega silenciosamente o último `.config` usado (se o arquivo ainda existir e for válido) e aplica todos os campos automaticamente. Em sessões recorrentes com o mesmo protocolo, basta abrir o programa e clicar em **começar**.
 
 ### Novo
 
@@ -207,7 +207,7 @@ Ao clicar em **começar**, o Compasso verifica se todos os cinco pré-requisitos
 ### Passo a passo
 
 1. Configure o OpenSignals com o LSL ativo (veja [Antes de abrir o programa](#antes-de-abrir-o-programa)).
-2. Abra o Compasso — o último `.config` é carregado automaticamente se existir.
+2. Abra o Com Passo — o último `.config` é carregado automaticamente se existir.
 3. Se necessário, use **Experimento → Novo** para criar uma configuração ou **Experimento → Abrir** para carregar uma existente.
 4. Confirme o endereço MAC e o canal (**A1–A6**) no painel superior e clique no botão de conexão.
 5. Preencha Nome, Idade e Gênero e clique em **Salvar informações**.
