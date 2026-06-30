@@ -1,10 +1,12 @@
-<!-- LOGO: place project logo here -->
+<img width="866" height="314" alt="gitlogo" src="https://github.com/user-attachments/assets/e5dad8b9-4276-4b4c-ae12-355560d0f385" />
 
 # Compasso
 
 **Compasso** é uma plataforma de pesquisa em psicofisiologia que sincroniza a reprodução de músicas com a aquisição contínua do sinal do **BITalino** (via OpenSignals + Lab Streaming Layer). Amostras e marcadores de evento compartilham um único relógio (`pylsl.local_clock()`), garantindo sincronia precisa entre o estímulo auditivo e os dados fisiológicos.
 
 ---
+
+<img width="1273" height="826" alt="ui" src="https://github.com/user-attachments/assets/604702a8-be11-435e-bf07-1884b3a3c304" />
 
 ## Sumário
 
@@ -61,13 +63,13 @@ A conexão com o BITalino **só funciona** se o OpenSignals estiver compartilhan
 
 > Sem o LSL ativo e transmitindo, a conexão do Compasso falha com uma mensagem de erro (timeout de ~2 s ao procurar a stream).
 
-<!-- SCREENSHOT: OpenSignals LSL stream integration -->
+<img width="1115" height="761" alt="opensignals" src="https://github.com/user-attachments/assets/e68e7110-96a6-492d-9be2-84ddcad987e3" />
 
 ---
 
 ## Menu "Experimento"
 
-<!-- SCREENSHOT: Experiment configuration window -->
+<img width="720" height="530" alt="configsui" src="https://github.com/user-attachments/assets/584b386c-77f5-4327-ac46-fc0a72eba839" />
 
 O menu **Experimento** (barra de menus da janela principal) centraliza toda a configuração do experimento em arquivos `.config` reutilizáveis. Cada `.config` é um arquivo JSON que armazena caminhos, quantidades esperadas e parâmetros do BITalino — basta abri-lo em sessões futuras para restaurar toda a configuração de uma vez.
 
