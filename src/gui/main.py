@@ -8,7 +8,7 @@ from . import gui_logger
 from . import set_window_configs
 from .context import AppContext
 from .assets import AppImages, ASSETS_DIR
-from .theme import WIN_BG, TRANSPARENTE, WIN_MIN_WIDTH, WIN_MIN_HEIGHT
+from .theme import ACCENT, ACCENT_TINT, WIN_BG, TRANSPARENTE, WIN_MIN_WIDTH, WIN_MIN_HEIGHT
 from .frames import (ConnectionFrame, StepperFrame, ParticipantCard, FilesCard,
                      PlayerBar, GraphPlaceholder, DownFrame)
 from .experiment_config_window import ExperimentConfigWindow
@@ -23,7 +23,7 @@ class Compasso(ctk.CTk):
         super().__init__(fg_color=WIN_BG)
         self.title(nome)
         self.minsize(WIN_MIN_WIDTH, WIN_MIN_HEIGHT)
-        set_window_configs(self, width_multip=0.5, height_multip=0.6)
+        set_window_configs(self, width=WIN_MIN_WIDTH, height=WIN_MIN_HEIGHT)
 
         # ícone da janela principal (Windows usa .ico; em outros SOs o ícone vem do bundle)
         try:
@@ -196,7 +196,10 @@ class MainFrame(ctk.CTkFrame):
 
         self.ctx = ctx
 
-        content = ctk.CTkFrame(self, fg_color=WIN_BG)
+        content = ctk.CTkScrollableFrame(self, fg_color=WIN_BG,
+                                         scrollbar_fg_color=TRANSPARENTE, 
+                                         scrollbar_button_color=ACCENT_TINT,
+                                         scrollbar_button_hover_color=ACCENT)
         content.pack(fill="both", expand=True, padx=22, pady=(18, 0))
 
         self.connection_frame = ConnectionFrame(content, ctx)

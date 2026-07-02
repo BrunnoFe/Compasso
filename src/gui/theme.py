@@ -28,7 +28,7 @@ PALETTE_TEAL = {
     "accent_ink":    "#04120F",   # texto sobre o acento
     "accent_tint":   "#0C2B28",   # fundo tênue do acento (badges, chips)
     "accent_border": "#14463F",   # borda do pill conectado
-
+ 
     "success":       "#34D399",   # ponto "conectado" / checks
     "danger":        "#F87171",   # gravando / parar
     "danger_tint":   "#2A1515",
