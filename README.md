@@ -1,12 +1,10 @@
-<img width="866" height="314" alt="gitlogo" src="https://github.com/user-attachments/assets/e5dad8b9-4276-4b4c-ae12-355560d0f385" />
-
-# Com Passo
+# ComPasso
 
 **Com Passo** é uma plataforma de pesquisa em psicofisiologia que sincroniza a reprodução de músicas com a aquisição contínua do sinal do **BITalino** (via OpenSignals + Lab Streaming Layer). Amostras e marcadores de evento compartilham um único relógio (`pylsl.local_clock()`), garantindo sincronia precisa entre o estímulo auditivo e os dados fisiológicos.
 
 ---
 
-<img width="1274" height="890" alt="ui" src="https://github.com/user-attachments/assets/ec160812-7d6d-44a6-a17b-506c8e943382" />
+<img width="1263" height="814" alt="ui" src="https://github.com/user-attachments/assets/105450bb-c452-425d-bdfa-80cee88764b9" />
 
 ## Sumário
 
@@ -64,6 +62,8 @@ A conexão com o BITalino **só funciona** se o OpenSignals estiver compartilhan
 > Sem o LSL ativo e transmitindo, a conexão do Com Passo falha com uma mensagem de erro (timeout de ~2 s ao procurar a stream).
 
 <img width="1115" height="761" alt="opensignals" src="https://github.com/user-attachments/assets/e68e7110-96a6-492d-9be2-84ddcad987e3" />
+
+<img width="1233" height="110" alt="contedado" src="https://github.com/user-attachments/assets/b75c39f7-55de-4f9a-9aef-b6357ac3ec1a" />
 
 ---
 
@@ -181,6 +181,8 @@ Três seleções, que também são preenchidas automaticamente ao carregar um `.
 A linha de status (texto no rodapé deste painel, também repetida no painel inferior) indica o que ainda falta selecionar e, quando tudo está pronto, confirma que os arquivos foram encontrados e mapeados com sucesso.
 
 ### Painel central inferior — Player
+
+<img width="1259" height="299" alt="comecar" src="https://github.com/user-attachments/assets/6d69ac3e-5a44-4301-98b6-ed887bf81586" />
 
 - **Nome da faixa atual**, **barra de progresso** com tempos e **Volume** (slider que controla o volume principal do sistema).
 - **Parar** — interrompe **a qualquer momento** o experimento e a reprodução, gravando o marcador `stop` e finalizando o arquivo da faixa atual.
