@@ -6,7 +6,7 @@
 
 ---
 
-<img width="1273" height="826" alt="ui" src="https://github.com/user-attachments/assets/604702a8-be11-435e-bf07-1884b3a3c304" />
+<img width="1274" height="890" alt="ui" src="https://github.com/user-attachments/assets/ec160812-7d6d-44a6-a17b-506c8e943382" />
 
 ## Sumário
 
@@ -69,9 +69,9 @@ A conexão com o BITalino **só funciona** se o OpenSignals estiver compartilhan
 
 ## Menu "Experimento"
 
-<img width="720" height="530" alt="configsui" src="https://github.com/user-attachments/assets/584b386c-77f5-4327-ac46-fc0a72eba839" />
-
 O menu **Experimento** (barra de menus da janela principal) centraliza toda a configuração do experimento em arquivos `.config` reutilizáveis. Cada `.config` é um arquivo JSON que armazena caminhos, quantidades esperadas e parâmetros do BITalino — basta abri-lo em sessões futuras para restaurar toda a configuração de uma vez.
+
+<img width="700" height="499" alt="configs" src="https://github.com/user-attachments/assets/dd4003c8-acf3-42ee-8c6b-71b3e9aee3f2" />
 
 > **Carga automática ao iniciar:** o Com Passo carrega silenciosamente o último `.config` usado (se o arquivo ainda existir e for válido) e aplica todos os campos automaticamente. Em sessões recorrentes com o mesmo protocolo, basta abrir o programa e clicar em **começar**.
 
@@ -125,7 +125,7 @@ Exemplo:
 | faixa_01.mp3 | musica |
 | branco_01.wav | ruido |
 
-<!-- SCREENSHOT: Conditions and music sheet file example -->
+<img width="497" height="122" alt="fatores" src="https://github.com/user-attachments/assets/980f1e33-5da6-4e78-a25a-7db569695c06" />
 
 > **Importante:** o valor da coluna `musica` deve bater exatamente com o nome do arquivo na pasta. Se uma música não tiver linha correspondente, o programa avisa e interrompe a verificação — corrija a planilha e recarregue. Os contadores **Música / Ruído** são calculados a partir da coluna `fator`: valores que contêm "ruido"/"ruído" contam como ruído; qualquer outro valor conta como música.
 
@@ -139,8 +139,6 @@ python main.py
 
 A janela do Compasso abre maximizada/centralizada. Na **primeira execução**, o programa cria automaticamente as pastas de dados e de logs (veja [Onde os dados são salvos](#onde-os-dados-são-salvos)).
 
-<!-- SCREENSHOT: Main application GUI -->
-
 ---
 
 ## A interface, painel por painel
@@ -148,6 +146,8 @@ A janela do Compasso abre maximizada/centralizada. Na **primeira execução**, o
 A tela é dividida em quatro regiões:
 
 ### Painel superior — Conexão com o BITalino
+
+<img width="1219" height="109" alt="bit_conect" src="https://github.com/user-attachments/assets/dceb5366-353b-4206-8f35-cbf82716692a" />
 
 1. **Endereço MAC** — campo de texto para digitar o endereço MAC do BITalino no formato `XX:XX:XX:XX:XX:XX`. É por ele que o Compasso localiza a *stream* LSL publicada pelo OpenSignals.
 2. **Canal** — caixa de seleção ao lado do endereço MAC. Escolha o canal do sensor cujo sinal será gravado (**A1 a A6**). O padrão ao abrir o programa é **A1**.
@@ -158,6 +158,8 @@ A tela é dividida em quatro regiões:
 
 ### Painel central esquerdo — Dados do participante
 
+<img width="486" height="360" alt="participantes" src="https://github.com/user-attachments/assets/6aac6a2a-c4b6-4d3b-84ac-706c84e1d0dc" />
+
 Preencha **Nome**, **Idade** e **Gênero** e clique em **Salvar informações**. Regras de validação:
 
 - **Nome** e **Gênero**: apenas letras e espaços.
@@ -167,6 +169,8 @@ Preencha **Nome**, **Idade** e **Gênero** e clique em **Salvar informações**.
 Após salvar, os campos ficam travados e o botão muda para **Editar informações**, caso precise corrigir algo.
 
 ### Painel central direito — Arquivos e diretório de saída
+
+<img width="728" height="359" alt="arquivos" src="https://github.com/user-attachments/assets/24246385-d591-4ae7-863e-4ad7902a9725" />
 
 Três seleções, que também são preenchidas automaticamente ao carregar um `.config` pelo menu **Experimento**:
 
