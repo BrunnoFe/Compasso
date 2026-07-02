@@ -133,6 +133,14 @@ class ParticipantCard(_Card):
         self.form_frame.pack(fill="both", expand=True)
         self.ctx.notify_stepper()
 
+    def restore_summary(self):
+        """Reexibe o resumo a partir do contexto (usado após reconstruir a UI, ex.: troca de tema)."""
+        if not self.ctx.infos_saved:
+            return
+        self._render_summary(self.ctx.nome, self.ctx.idade, self.ctx.genero)
+        self.form_frame.pack_forget()
+        self.summary_frame.pack(fill="both", expand=True)
+
 
 class FilesCard(_Card):
     """Carregamento da pasta de músicas, do Excel de condições e do diretório de saída."""

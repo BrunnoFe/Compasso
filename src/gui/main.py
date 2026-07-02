@@ -3,27 +3,41 @@ import tkinter
 from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
+import pywinstyles
+
+from CTkMenuBar import CTkMenuBar, CustomDropdownMenu
 
 from . import gui_logger
 from . import set_window_configs
+from . import theme
 from .context import AppContext
 from .assets import AppImages, ASSETS_DIR
-from .theme import ACCENT, ACCENT_TINT, WIN_BG, TRANSPARENTE, WIN_MIN_WIDTH, WIN_MIN_HEIGHT
+from .theme import ACCENT, ACCENT_TINT, BAR_BG, FOOTER_BG, WIN_BG, TRANSPARENTE, WIN_MIN_WIDTH, WIN_MIN_HEIGHT
+from .widgets import show_message
 from .frames import (ConnectionFrame, StepperFrame, ParticipantCard, FilesCard,
                      PlayerBar, GraphPlaceholder, DownFrame)
 from .experiment_config_window import ExperimentConfigWindow
-from src.core import config_manager
+from src.core import config_manager, set_system_volume
 
-ctk.set_appearance_mode("dark")
+#ctk.set_appearance_mode("dark")
 
 class Compasso(ctk.CTk):
     """Janela raiz: cria o `AppContext` e monta o `MainFrame` (tema escuro)."""
 
     def __init__(self, nome="ComPasso"):
+        # aplica o tema salvo (se houver) ANTES de construir qualquer widget, para que a
+        # janela e todos os frames já nasçam com a paleta persistida.
+        saved_theme = config_manager.get_theme_pref()
+        if saved_theme:
+            theme.set_theme(saved_theme)
+
         super().__init__(fg_color=WIN_BG)
         self.title(nome)
         self.minsize(WIN_MIN_WIDTH, WIN_MIN_HEIGHT)
         set_window_configs(self, width=WIN_MIN_WIDTH, height=WIN_MIN_HEIGHT)
+
+        pywinstyles.change_border_color(self, WIN_BG)  # Windows: muda a cor da borda da janela
+        pywinstyles.change_header_color(self, WIN_BG)  # Windows: muda a cor da barra de título
 
         # ícone da janela principal (Windows usa .ico; em outros SOs o ícone vem do bundle)
         try:
@@ -34,32 +48,117 @@ class Compasso(ctk.CTk):
         self.ctx = AppContext(self)
         self.ctx.images = AppImages()   # carregado após o root existir (mantido por compat.)
 
-        self.main_frame = MainFrame(self, self.ctx)
-        self.main_frame.pack(fill="both", expand=True)
-
         # menu "Experimento" + sistema de configuração (.config)
         self._loaded_config_path = None
         self._loaded_config_data = None
         self._build_menu()
+
+        # inicialização do volume do sistema em 50% (uma única vez, no arranque).
+        # O PlayerBar lê o volume atual em seguida e reflete esse valor no slider.
+        set_system_volume(50)
+
+        self.main_frame = MainFrame(self, self.ctx)
+        self.main_frame.pack(fill="both", expand=True)
+
         self._auto_load_config()
 
     # ------------------------------------------------------------------ #
     def _build_menu(self):
-        """Cria a barra de menus com o menu 'Experimento' (Novo/Abrir/Editar)."""
-        menubar = tkinter.Menu(self)
-        self._experimento_menu = tkinter.Menu(menubar, tearoff=0)
-        self._experimento_menu.add_command(label="Novo", command=self._on_novo)
-        self._experimento_menu.add_command(label="Abrir", command=self._on_abrir)
-        self._experimento_menu.add_command(label="Editar", command=self._on_editar, state="disabled")
-        menubar.add_cascade(label="Experimento", menu=self._experimento_menu)
-        # CTk.configure filtra kwargs desconhecidos; anexa o menu pelo método base do Tk
-        tkinter.Tk.config(self, menu=menubar)
+        """Cria a barra de menus com o menu 'Experimento' (Novo/Abrir/Editar) usando CTkMenuBar."""
+        # Cria a barra superior integrada ao fundo da janela
+        self.menu_bar = CTkMenuBar(master=self, bg_color=FOOTER_BG,
+                                   height=10, width=10,
+                                   padx=5, pady=1)
+        
+        # Adiciona o botão principal "Experimento"
+        self.btn_experimento = self.menu_bar.add_cascade(
+            "Experimento",
+            hover_color=ACCENT_TINT
+        )
+        
+        # Cria o dropdown flutuante associado ao botão
+        self.dropdown_experimento = CustomDropdownMenu(
+            widget=self.btn_experimento,
+            bg_color=WIN_BG,
+            hover_color=ACCENT_TINT,
+            border_color=BAR_BG,
+            border_width=2,
+        )
+        
+        # Adiciona as opções
+        self.dropdown_experimento.add_option(option="Novo", command=self._on_novo)
+        self.dropdown_experimento.add_option(option="Abrir", command=self._on_abrir)
+        self.dropdown_experimento.add_option(option="Editar", command=self._on_editar)
+
+        # Menu "Tema": uma opção por paleta disponível; troca a aparência ao vivo.
+        self.btn_tema = self.menu_bar.add_cascade("Tema", hover_color=ACCENT_TINT)
+        self.dropdown_tema = CustomDropdownMenu(
+            widget=self.btn_tema,
+            bg_color=WIN_BG,
+            hover_color=ACCENT_TINT,
+            border_color=BAR_BG,
+            border_width=2
+        )
+        for nome_tema in theme.THEME_NAMES:
+            self.dropdown_tema.add_option(
+                option=nome_tema,
+                command=lambda n=nome_tema: self._on_theme_selected(n)
+            )
 
     def _enable_editar(self):
         try:
-            self._experimento_menu.entryconfigure("Editar", state="normal")
+            self.dropdown_experimento.entryconfigure("Editar", state="normal")
         except Exception as e:
             gui_logger.logger.warning(f"Não foi possível habilitar 'Editar': {e}")
+
+    # ------------------------------------------------------------------ #
+    def _theme_switch_allowed(self) -> bool:
+        """Só permite trocar o tema com a aplicação ociosa (sem conexão nem sessão em curso).
+
+        Uma troca reconstrói a UI inteira, o que resetaria a visão de conexão e o andamento
+        do experimento; por isso é bloqueada enquanto houver inlet ou runner ativo.
+        """
+        runner = self.ctx.runner
+        return self.ctx.bitalino is None and (runner is None or not runner.is_running())
+
+    def _on_theme_selected(self, name: str):
+        """Aplica a paleta `name` ao vivo (se ocioso), persiste a escolha e reconstrói a UI."""
+        if not self._theme_switch_allowed():
+            show_message("Tema", "Desconecte o Bitalino e finalize a sessão antes de trocar o tema.",
+                         icon="info")
+            return
+        if not theme.set_theme(name):
+            gui_logger.logger.warning(f"Tema desconhecido ignorado: {name}")
+            return
+        config_manager.set_theme_pref(name)
+        gui_logger.logger.info(f"Tema alterado para: {name}")
+        self._rebuild_ui()
+
+    def _rebuild_ui(self):
+        """Reconstrói a barra de menus e o `MainFrame` para refletir a paleta ativa.
+
+        Reutiliza o mesmo `AppContext` — o estado (config, infos do participante) sobrevive;
+        os frames re-registram seus callbacks ao serem reconstruídos. Em seguida reaplica a
+        config carregada e restaura o resumo do participante, se já estava salvo.
+        """
+        self.configure(fg_color=WIN_BG)
+        pywinstyles.change_border_color(self, WIN_BG)
+        pywinstyles.change_header_color(self, WIN_BG)
+
+        self.main_frame.destroy()
+        self.menu_bar.destroy()
+
+        self._build_menu()
+        if self._loaded_config_data:
+            self._enable_editar()
+
+        self.main_frame = MainFrame(self, self.ctx)
+        self.main_frame.pack(fill="both", expand=True)
+
+        if self._loaded_config_data:
+            self.apply_config(self._loaded_config_data)
+        if self.ctx.infos_saved:
+            self.main_frame.participant_card.restore_summary()
 
     def _on_novo(self):
         ExperimentConfigWindow(self, mode="novo", on_saved=self._on_config_saved)
@@ -200,7 +299,7 @@ class MainFrame(ctk.CTkFrame):
                                          scrollbar_fg_color=TRANSPARENTE, 
                                          scrollbar_button_color=ACCENT_TINT,
                                          scrollbar_button_hover_color=ACCENT)
-        content.pack(fill="both", expand=True, padx=22, pady=(18, 0))
+        content.pack(fill="both", expand=True, padx=22, pady=(5, 0))
 
         self.connection_frame = ConnectionFrame(content, ctx)
         self.connection_frame.pack(fill="x", pady=(0, 16))

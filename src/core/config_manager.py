@@ -195,3 +195,22 @@ def get_last_config_path():
     """Retorna o caminho do último `.config` usado, ou None se não houver."""
     path = _read_prefs().get("last_config")
     return path if path else None
+
+
+def set_theme_pref(name: str) -> None:
+    """Registra, nas preferências, o nome da paleta de tema selecionada."""
+    prefs = _read_prefs()
+    prefs["theme"] = str(name)
+    prefs_path = get_prefs_path()
+    try:
+        os.makedirs(os.path.dirname(str(prefs_path)), exist_ok=True)
+        with open(prefs_path, "w", encoding=ENCODING_FORMAT) as f:
+            json.dump(prefs, f, ensure_ascii=False, indent=2)
+    except OSError as e:
+        config_logger.logger.error(f"Falha ao gravar preferências: {e}")
+
+
+def get_theme_pref():
+    """Retorna o nome da paleta de tema salva, ou None se não houver."""
+    name = _read_prefs().get("theme")
+    return name if name else None
