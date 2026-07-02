@@ -102,6 +102,7 @@ class ExperimentRunner:
             self._recorder = None
         self._running = False
         self._set_button("comecar")
+        self._post_condition("")
         self._post_status("Experimento interrompido.")
 
     def continuar(self) -> None:
@@ -181,7 +182,8 @@ class ExperimentRunner:
         ts_start = local_clock()
         recorder.add_marker("music_start", ts_start, music_file=self.music_name, fator=self.music_fator)
         self.ctx.player.play()
-        self._post_current_music(f"Música: {self.music_name}")
+        self._post_current_music(self.music_name)
+        self._post_condition(" música " if cat == "musica" else " ruído ")
         self._post_status(f"Reproduzindo: {self.music_name}")
 
         # 4) aguarda o fim da faixa (ou stop)
@@ -198,6 +200,7 @@ class ExperimentRunner:
 
         self._done[cat] = self._done.get(cat, 0) + 1
         self._update_counters(totals)
+        self._post_condition("")
 
     def _wait_track_end(self) -> None:
         """Aguarda enquanto o mixer estiver tocando, abortando se houver stop."""
@@ -211,6 +214,7 @@ class ExperimentRunner:
     def _finish(self) -> None:
         self._running = False
         self._set_button("comecar")
+        self._post_condition("")
         if not self._stop_event.is_set():
             experiment_logger.logger.info("Experimento finalizado.")
             self._post_status("Experimento finalizado.")
@@ -227,7 +231,21 @@ class ExperimentRunner:
     def _post_current_music(self, text: str) -> None:
         self.ctx.run_after(lambda: self.ctx.current_music_text.set(text))
 
+    def _post_condition(self, text: str) -> None:
+        self.ctx.run_after(lambda: self.ctx.current_condition_text.set(text))
+
     def _update_counters(self, totals: dict) -> None:
         done = dict(self._done)
-        self.ctx.run_after(lambda: self.ctx.music_counter.set(f"Música: {done['musica']} de {totals['musica']}"))
-        self.ctx.run_after(lambda: self.ctx.ruido_counter.set(f"Ruído: {done['ruido']} de {totals['ruido']}"))
+        total_tracks = totals["musica"] + totals["ruido"]
+        done_tracks = done["musica"] + done["ruido"]
+        frac = (done_tracks / total_tracks) if total_tracks else 0.0
+
+        def apply():
+            self.ctx.music_done_text.set(str(done["musica"]))
+            self.ctx.music_total_text.set(str(totals["musica"]))
+            self.ctx.ruido_done_text.set(str(done["ruido"]))
+            self.ctx.ruido_total_text.set(str(totals["ruido"]))
+            self.ctx.session_progress.set(frac)
+            self.ctx.session_status_text.set(f"{done_tracks} / {total_tracks}")
+
+        self.ctx.run_after(apply)

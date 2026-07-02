@@ -1,6 +1,6 @@
 """Janela modal de configuração do experimento (compartilhada por "Novo" e "Editar").
 
-Segue o tema da janela principal (cores/fontes de `theme.py`, widgets de `widgets.py`).
+Segue o tema escuro da janela principal (cores/fontes de `theme.py`, widgets de `widgets.py`).
 Salva/edita arquivos `.config` via `src.core.config_manager`.
 """
 
@@ -11,9 +11,9 @@ from tkinter import filedialog
 from CTkMessagebox import CTkMessagebox
 
 from . import gui_logger
-from .theme import (AZUL, AZUL_CLARO, ROSA, CINZA, AMARELO, TRANSPARENTE,
-                    BASE_FONT, BORDER_WIDTH, BORDER_WIDTH_INSIDE, CORNER)
-from .widgets import show_message, styled_label, styled_button, styled_entry, styled_combobox
+from .theme import (WIN_BG, BAR_BG, INPUT_BG, BORDER, TEXT, TRANSPARENTE, BASE_FONT, CORNER)
+from .widgets import (show_message, styled_label, styled_button, styled_entry,
+                     styled_combobox, ghost_button)
 from src.core.config_manager import (save_config, validate_values, get_experiment_files_dir,
                                      CHANNEL_OPTIONS)
 
@@ -29,7 +29,7 @@ class ExperimentConfigWindow(ctk.CTkToplevel):
     """
 
     def __init__(self, master, mode="novo", on_saved=None, initial=None, config_path=None):
-        super().__init__(master, fg_color=AZUL)
+        super().__init__(master, fg_color=WIN_BG)
         self.mode = mode
         self.on_saved = on_saved
         self.config_path = config_path
@@ -39,8 +39,8 @@ class ExperimentConfigWindow(ctk.CTkToplevel):
         self.transient(master)
         self.after(10, self._safe_grab)
 
-        mainframe = ctk.CTkFrame(self, corner_radius=CORNER, border_width=BORDER_WIDTH_INSIDE,
-                                 bg_color=AZUL, fg_color=AZUL_CLARO, border_color=AZUL)
+        mainframe = ctk.CTkFrame(self, corner_radius=CORNER, border_width=1,
+                                 bg_color=WIN_BG, fg_color=BAR_BG, border_color=BORDER)
         mainframe.grid(row=0, column=0, padx=20, pady=20, sticky=ctk.NSEW)
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -71,7 +71,7 @@ class ExperimentConfigWindow(ctk.CTkToplevel):
 
         # 6) Canal ativo do BITalino
         styled_label(mainframe, text="Canal ativo do BITalino:").grid(row=6, column=0, padx=15, pady=10, sticky=ctk.E)
-        self.channel_combobox = styled_combobox(mainframe, variable=self.channel_var, values=CHANNEL_OPTIONS, state="readonly", width=120, bg_color=AZUL_CLARO)
+        self.channel_combobox = styled_combobox(mainframe, variable=self.channel_var, values=CHANNEL_OPTIONS, state="readonly", width=120)
         self.channel_combobox.grid(row=6, column=1, columnspan=2, padx=15, pady=10, sticky=ctk.W)
 
         # 7) Endereço MAC do BITalino
@@ -82,9 +82,9 @@ class ExperimentConfigWindow(ctk.CTkToplevel):
         # botões
         button_row = ctk.CTkFrame(mainframe, fg_color=TRANSPARENTE)
         button_row.grid(row=8, column=0, columnspan=3, padx=15, pady=(20, 15), sticky=ctk.E)
-        self.salvar_button = styled_button(button_row, text="Salvar", width=120, bg_color=AZUL_CLARO, fg_color=ROSA, hover_color=AMARELO, command=self._on_salvar)
+        self.salvar_button = styled_button(button_row, text="Salvar", width=120, command=self._on_salvar)
         self.salvar_button.grid(row=0, column=0, padx=(0, 10))
-        self.cancelar_button = styled_button(button_row, text="Cancelar", width=120, bg_color=AZUL_CLARO, fg_color=AZUL_CLARO, hover_color=AZUL, command=self._on_cancelar)
+        self.cancelar_button = ghost_button(button_row, text="Cancelar", width=120, command=self._on_cancelar)
         self.cancelar_button.grid(row=0, column=1)
 
         if initial:
@@ -102,7 +102,7 @@ class ExperimentConfigWindow(ctk.CTkToplevel):
         styled_label(master, text=label).grid(row=row, column=0, padx=15, pady=10, sticky=ctk.E)
         entry = styled_entry(master, textvariable=var, width=320, state="readonly")
         entry.grid(row=row, column=1, padx=15, pady=10, sticky=ctk.EW)
-        styled_button(master, text="Procurar", width=90, bg_color=AZUL_CLARO, fg_color=ROSA, command=command).grid(row=row, column=2, padx=15, pady=10, sticky=ctk.W)
+        styled_button(master, text="Procurar", width=90, command=command).grid(row=row, column=2, padx=15, pady=10, sticky=ctk.W)
 
     def _entry_row(self, master, row, label, var, placeholder):
         """Linha com rótulo + entry editável (texto livre validado no salvar)."""
@@ -161,9 +161,9 @@ class ExperimentConfigWindow(ctk.CTkToplevel):
             nome = os.path.basename(self.config_path)
             box = CTkMessagebox(title="Confirmar", message=f"Sobrescrever {nome}?", icon="question",
                                 option_1="Não", option_2="Sim",
-                                fg_color=ROSA, bg_color=AZUL, text_color=CINZA, button_color=AZUL_CLARO,
-                                button_hover_color=AMARELO, font=("Helvetica", 12, "bold"), border_color=AZUL,
-                                border_width=BORDER_WIDTH, title_color=CINZA, button_text_color=CINZA,
+                                fg_color=BAR_BG, bg_color=WIN_BG, text_color=TEXT, button_color=INPUT_BG,
+                                button_hover_color=BORDER, font=("Helvetica", 12, "bold"), border_color=BORDER,
+                                border_width=1, title_color=TEXT, button_text_color=TEXT,
                                 corner_radius=CORNER, width=500, height=300)
             if box.get() != "Sim":
                 return

@@ -9,7 +9,6 @@ from src.core.player import Player
 if TYPE_CHECKING:
     from .assets import AppImages
 
-
 class AppContext:
     """Estado compartilhado da aplicação Compasso.
 
@@ -43,13 +42,18 @@ class AppContext:
         # ("comecar" | "rodando" | "continuar"); chamado pelo runner via post().
         self.set_button_state = None
 
-        # callback registrado pela UpLeftMidFrame: salva infos do participante em silêncio
+        # callback registrado pela ParticipantCard: salva infos do participante em silêncio
         # se o formulário estiver preenchido mas não salvo (usado pelo botão "começar").
         self.save_participant_infos_if_filled = None
 
         # watchdog de conexão do BITalino e callback de perda de conexão (top_frame).
         self.watchdog = None
         self.handle_connection_lost = None
+
+        # callback registrado pelo StepperFrame: re-renderiza as etapas a partir do estado
+        # (bitalino conectado, infos salvas, arquivos mapeados). Chamado por vários frames
+        # sempre que uma dessas condições muda.
+        self.refresh_stepper = None
 
         # dados do participante
         self.nome = None
@@ -66,14 +70,29 @@ class AppContext:
 
         # textos reativos dos rótulos (qualquer frame faz .set())
         self.status_text = ctk.StringVar(value="Conecte o Bitalino")
-        self.current_music_text = ctk.StringVar(value="Música: —")
+        self.current_music_text = ctk.StringVar(value="—")
+        self.current_condition_text = ctk.StringVar(value="")   # "música"/"ruído" (chip do player)
         self.volume_text = ctk.StringVar(value="Volume: 50%")
         self.time_begin_text = ctk.StringVar(value="00:00")
         self.time_end_text = ctk.StringVar(value="00:00")
-        self.music_counter = ctk.StringVar(value="Música: 0 de 0")
-        self.ruido_counter = ctk.StringVar(value="Ruído: 0 de 0")
+
+        # contadores separados (número concluído + total) para o estilo do rodapé
+        self.music_done_text = ctk.StringVar(value="0")
+        self.music_total_text = ctk.StringVar(value="0")
+        self.ruido_done_text = ctk.StringVar(value="0")
+        self.ruido_total_text = ctk.StringVar(value="0")
+
+        # progresso da sessão (barra + texto "N / total" no rodapé)
+        self.session_progress = ctk.DoubleVar(value=0.0)
+        self.session_status_text = ctk.StringVar(value="0 / 0")
 
         gui_logger.logger.info("AppContext inicializado.")
+
+    def notify_stepper(self) -> None:
+        """Agenda a re-renderização do stepper na thread da GUI, se registrado."""
+        cb = self.refresh_stepper
+        if cb is not None:
+            self.run_after(cb)
 
     def run_after(self, func) -> None:
         """Agenda `fn()` para rodar na thread da GUI (seguro a partir de qualquer thread)."""

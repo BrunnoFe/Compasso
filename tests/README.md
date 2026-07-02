@@ -1,4 +1,4 @@
-# Testes — Compasso
+# Testes — Com Passo
 
 Suíte em `pytest`. Nenhum teste toca hardware real (BITalino/LSL), rede ou diálogos de
 arquivo; o hardware é substituído por *fakes* determinísticos.

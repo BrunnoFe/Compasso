@@ -1,67 +1,87 @@
 import customtkinter as ctk
 
-from ..guiconfigs import set_grids
-from ..theme import AZUL, ROSA, TRANSPARENTE, BORDER_WIDTH, CORNER, NSE
-from ..widgets import show_message, bind_hover_images, styled_label
+from ..theme import (FOOTER_BG, BORDER, TEXT, MUTED, FAINT, FAINT2, ACCENT,
+                     ACCENT_INK, TRANSPARENTE, DISPLAY_FAMILY)
+from ..widgets import show_message, mono, caption
 from src.core import ExperimentRunner
 
 
 class DownFrame(ctk.CTkFrame):
-    """Painel inferior: contadores do experimento, status e o botão principal (começar)."""
+    """Rodapé: contadores do experimento, status/progresso da sessão e o botão principal.
+
+    Mantém o nome `DownFrame` e `_validar_prerequisitos` (dependência de teste). O botão
+    principal agora é textual (não mais imagens), mas os estados
+    `comecar`/`rodando`/`continuar` continuam trocados via `ctx.set_button_state`.
+    """
 
     def __init__(self, master, ctx):
-        super().__init__(master, corner_radius=CORNER, border_width=BORDER_WIDTH, bg_color=AZUL, fg_color=ROSA, border_color=AZUL)
-        set_grids(self, rows_conf={1: [0, 1]}, column_conf={1: [0, 1, 2]}, grid_row=2)
-
+        super().__init__(master, fg_color=FOOTER_BG, corner_radius=0, border_width=0)
         self.ctx = ctx
 
-        # Rótulos reativos com largura FIXA: contadores têm texto curto e limitado
-        # (largura mínima basta); o status é longo e variável, então usa width+wraplength
-        # para travar a largura (mín. e máx.) e quebrar linha em vez de alargar. Sem isso,
-        # mudar o texto redimensiona o rótulo e dispara reflow do layout (o "glitch").
-        self.exp_progress_music_label = styled_label(self, textvariable=self.ctx.music_counter, width=200, anchor=ctk.W)
-        self.exp_progress_music_label.grid(row=0, column=0, padx=15, pady=10, sticky=ctk.EW)
+        row = ctk.CTkFrame(self, fg_color=TRANSPARENTE)
+        row.pack(fill="x", padx=24, pady=16)
 
-        self.exp_progress_ruido_label = styled_label(self, textvariable=self.ctx.ruido_counter, width=200, anchor=ctk.W)
-        self.exp_progress_ruido_label.grid(row=1, column=0, padx=15, pady=10, sticky=ctk.EW)
+        # ----- contadores -----
+        self._counter(row, "MÚSICA", self.ctx.music_done_text, self.ctx.music_total_text)
+        self._counter(row, "RUÍDO", self.ctx.ruido_done_text, self.ctx.ruido_total_text)
 
-        self.down_infos_label = styled_label(self, textvariable=self.ctx.status_text, width=480, wraplength=400, anchor=ctk.E)
-        self.down_infos_label.grid(row=0, rowspan=2, column=1, padx=15, pady=10, sticky=ctk.NS)
+        # ----- status + progresso da sessão -----
+        mid = ctk.CTkFrame(row, fg_color=TRANSPARENTE)
+        mid.pack(side="left", fill="x", expand=True, padx=8)
+        head = ctk.CTkFrame(mid, fg_color=TRANSPARENTE)
+        head.pack(fill="x")
+        ctk.CTkLabel(head, textvariable=self.ctx.status_text, text_color=MUTED, anchor="w",
+                     font=ctk.CTkFont(DISPLAY_FAMILY, 12)).pack(side="left", fill="x", expand=True)
+        mono(head, "", 12, FAINT, textvariable=self.ctx.session_status_text).pack(side="right")
+        spb = ctk.CTkProgressBar(mid, height=6, corner_radius=999,
+                                 progress_color=ACCENT, fg_color=BORDER,
+                                 variable=self.ctx.session_progress)
+        spb.pack(fill="x", pady=(6, 0))
 
-        # imagens dos três estados do botão principal (comecar -> rodando -> continuar),
-        # já carregadas e cacheadas em ctx.images (com fallback para "comecar").
-        imgs = ctx.images
-        self._button_images = {
-            "comecar": (imgs.comecar, imgs.comecar_dim),
-            "rodando": (imgs.rodando, imgs.rodando_dim),
-            "continuar": (imgs.continuar, imgs.continuar_dim),
-        }
-        self._button_state = "comecar"
-
-        self.comecar_bt = ctk.CTkButton(self, image=imgs.comecar, bg_color=TRANSPARENTE, fg_color=TRANSPARENTE, text="", hover=False, command=self.comecar_experimento)
-        self.comecar_bt.grid(row=0, rowspan=2, column=2, pady=20, padx=20, sticky=NSE)
+        # ----- botão principal (comecar / rodando / continuar) -----
+        self.action_button = ctk.CTkButton(
+            row, text="Começar", width=170, height=48, corner_radius=11,
+            fg_color=ACCENT, hover_color=ACCENT, text_color=ACCENT_INK,
+            font=ctk.CTkFont(DISPLAY_FAMILY, 15, weight="bold"),
+            command=self.comecar_experimento)
+        self.action_button.pack(side="left", padx=(24, 0))
 
         # expõe a troca de estado do botão para o runner (chamada via ctx.run_after)
         self.ctx.set_button_state = self._set_button_state
         self._set_button_state("comecar")
 
+    def _counter(self, master, label, done_var, total_var):
+        col = ctk.CTkFrame(master, fg_color=TRANSPARENTE)
+        col.pack(side="left", padx=(0, 18))
+        caption(col, label).pack(anchor="w")
+        line = ctk.CTkFrame(col, fg_color=TRANSPARENTE)
+        line.pack(anchor="w")
+        ctk.CTkLabel(line, textvariable=done_var, text_color=TEXT,
+                     font=ctk.CTkFont(DISPLAY_FAMILY, 19, weight="bold")).pack(side="left")
+        total = ctk.CTkLabel(line, text="", text_color=FAINT2,
+                             font=ctk.CTkFont(DISPLAY_FAMILY, 14))
+        total.pack(side="left")
+        # prefixo " / " no total via trace
+        def _sync(*_):
+            total.configure(text=f" / {total_var.get()}")
+        total_var.trace_add("write", _sync)
+        _sync()
+
+    # ------------------------------------------------------------------ #
     def _set_button_state(self, state: str):
         """Alterna o estado do botão principal: 'comecar' | 'rodando' | 'continuar'."""
         self._button_state = state
-        normal, dim = self._button_images.get(state, self._button_images["comecar"])
-        self.comecar_bt.unbind('<Enter>')
-        self.comecar_bt.unbind('<Leave>')
-
         if state == "rodando":
-            self.comecar_bt.configure(image=normal, state="disabled", command=lambda: None)
+            self.action_button.configure(text="Executando…", state="disabled",
+                                         fg_color=BORDER, text_color=MUTED, command=lambda: None)
         elif state == "continuar":
-            self.comecar_bt.configure(image=normal, state="normal", command=self._on_continuar)
-            bind_hover_images(self.comecar_bt, normal, dim)
+            self.action_button.configure(text="Continuar  →", state="normal",
+                                         fg_color=ACCENT, text_color=ACCENT_INK,
+                                         command=self._on_continuar)
         else:  # comecar
-            # 'começar' fica sempre habilitado; a verificação de pré-requisitos passou a
-            # ocorrer no clique (comecar_experimento), não mais por habilitar/desabilitar.
-            self.comecar_bt.configure(image=normal, state="normal", command=self.comecar_experimento)
-            bind_hover_images(self.comecar_bt, normal, dim, only_when_enabled=True)
+            self.action_button.configure(text="Começar", state="normal",
+                                         fg_color=ACCENT, text_color=ACCENT_INK,
+                                         command=self.comecar_experimento)
 
     def _on_continuar(self):
         """Avança para a próxima faixa (botão no estado 'continuar')."""

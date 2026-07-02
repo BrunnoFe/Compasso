@@ -7,11 +7,11 @@ main_logger = SetLogger(category='main', namelogger='mainLogger')
 
 def main():
     main_logger.logger.info("=========================================")
-    main_logger.logger.info("Iniciando o software Compasso...")
+    main_logger.logger.info("Iniciando o software ComPasso...")
     
     try:
         app = Compasso(
-            nome="Compasso - OpenSignals", 
+            nome="ComPasso", 
         )
         main_logger.logger.info("Interface gráfica carregada com sucesso.")
         app.mainloop()

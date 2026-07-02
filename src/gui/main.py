@@ -5,27 +5,25 @@ from tkinter import filedialog, messagebox
 import customtkinter as ctk
 
 from . import gui_logger
-from . import set_window_grid, set_window_configs, set_grids
+from . import set_window_configs
 from .context import AppContext
 from .assets import AppImages, ASSETS_DIR
-from .theme import AZUL, TRANSPARENTE, WIN_MIN_WIDTH, WIN_MIN_HEIGHT, BORDER_WIDTH, CORNER
-from .frames import UpFrame, MidFrame, DownFrame
+from .theme import WIN_BG, TRANSPARENTE, WIN_MIN_WIDTH, WIN_MIN_HEIGHT
+from .frames import (ConnectionFrame, StepperFrame, ParticipantCard, FilesCard,
+                     PlayerBar, GraphPlaceholder, DownFrame)
 from .experiment_config_window import ExperimentConfigWindow
 from src.core import config_manager
 
-ctk.set_appearance_mode("system")
-
+ctk.set_appearance_mode("dark")
 
 class Compasso(ctk.CTk):
-    """Janela raiz: cria o `AppContext` e monta o `MainFrame`."""
+    """Janela raiz: cria o `AppContext` e monta o `MainFrame` (tema escuro)."""
 
-    def __init__(self, nome="Compasso"):
-        super().__init__(fg_color=AZUL)
+    def __init__(self, nome="ComPasso"):
+        super().__init__(fg_color=WIN_BG)
         self.title(nome)
-        self.resizable(False, False)
         self.minsize(WIN_MIN_WIDTH, WIN_MIN_HEIGHT)
         set_window_configs(self, width_multip=0.5, height_multip=0.5)
-        set_window_grid(self)
 
         # ícone da janela principal (Windows usa .ico; em outros SOs o ícone vem do bundle)
         try:
@@ -34,8 +32,10 @@ class Compasso(ctk.CTk):
             gui_logger.logger.warning(f"Não foi possível definir o ícone da janela: {e}")
 
         self.ctx = AppContext(self)
-        self.ctx.images = AppImages()   # carregado após o root existir
+        self.ctx.images = AppImages()   # carregado após o root existir (mantido por compat.)
+
         self.main_frame = MainFrame(self, self.ctx)
+        self.main_frame.pack(fill="both", expand=True)
 
         # menu "Experimento" + sistema de configuração (.config)
         self._loaded_config_path = None
@@ -126,24 +126,24 @@ class Compasso(ctk.CTk):
 
         Cada campo é tratado individualmente; campos ausentes na janela são ignorados.
         """
-        up = self.main_frame.up_frame
-        ur = self.main_frame.mid_frame.upright_mid_frame
+        conn = self.main_frame.connection_frame
+        files = self.main_frame.files_card
 
         # MAC do BITalino
         try:
             mac = str(data.get("bitalino_mac", "")).strip()
             if mac:
-                up.mac_addr_var.set(mac)
+                conn.mac_addr_var.set(mac)
                 self.ctx.mac_addr = mac
         except Exception as e:
             gui_logger.logger.warning(f"apply_config (MAC): {e}")
 
-        # Canal ativo (A1–A6 -> número)
+        # Canal ativo (A1–A6): grava "A{n}" no optionmenu e o índice no contexto
         try:
-            channel = str(data.get("bitalino_channel", "")).strip()
-            if channel.upper().startswith("A") and channel[1:].isdigit():
+            channel = str(data.get("bitalino_channel", "")).strip().upper()
+            if channel.startswith("A") and channel[1:].isdigit():
                 n = int(channel[1:])
-                up.canal_var.set(str(n))
+                conn.canal_var.set(f"A{n}")
                 self.ctx.signal_channel = n
         except Exception as e:
             gui_logger.logger.warning(f"apply_config (canal): {e}")
@@ -152,7 +152,7 @@ class Compasso(ctk.CTk):
         try:
             music = str(data.get("music_folder", "")).strip()
             if music:
-                ur.music_file_folder_var.set(music)
+                files.music_file_folder_var.set(music)
                 self.ctx.music_folder = music
         except Exception as e:
             gui_logger.logger.warning(f"apply_config (pasta de músicas): {e}")
@@ -161,7 +161,7 @@ class Compasso(ctk.CTk):
         try:
             factors = str(data.get("factors_file", "")).strip()
             if factors:
-                ur.conditions_file_var.set(factors)
+                files.conditions_file_var.set(factors)
                 self.ctx.conditions_file = factors
         except Exception as e:
             gui_logger.logger.warning(f"apply_config (fatores): {e}")
@@ -170,28 +170,63 @@ class Compasso(ctk.CTk):
         try:
             save_dir = str(data.get("data_save_path", "")).strip()
             if save_dir:
-                ur.salvar_arquivos_var.set(save_dir)
+                files.salvar_arquivos_var.set(save_dir)
                 self.ctx.save_dir = save_dir
         except Exception as e:
             gui_logger.logger.warning(f"apply_config (pasta de salvamento): {e}")
 
+        # atualiza os checks dos arquivos e o stepper após aplicar a config
+        try:
+            files._refresh_checks()
+        except Exception as e:
+            gui_logger.logger.warning(f"apply_config (refresh checks): {e}")
+        self.ctx.notify_stepper()
+
 
 class MainFrame(ctk.CTkFrame):
-    """Contêiner dos três painéis principais (superior, central e inferior)."""
+    """Contêiner do redesign: pilha vertical de seções + rodapé fixo.
+
+    `content` reúne conexão, stepper, cartões, player e o espaço do gráfico;
+    o rodapé (`DownFrame`) fica preso embaixo.
+    """
 
     def __init__(self, master, ctx):
-        super().__init__(master, corner_radius=CORNER, border_width=BORDER_WIDTH, border_color=AZUL, bg_color=TRANSPARENTE, fg_color=TRANSPARENTE)
-        set_grids(self, rows_conf={1: [0, 2], 4: [1]}, column_conf={1: [0]})
+        super().__init__(master, fg_color=WIN_BG, corner_radius=0)
         gui_logger.logger.info("MainFrame iniciado.")
 
         self.ctx = ctx
 
-        self.up_frame = UpFrame(self, ctx)
-        self.mid_frame = MidFrame(self, ctx)
+        content = ctk.CTkFrame(self, fg_color=WIN_BG)
+        content.pack(fill="both", expand=True, padx=22, pady=(18, 0))
+
+        self.connection_frame = ConnectionFrame(content, ctx)
+        self.connection_frame.pack(fill="x", pady=(0, 16))
+
+        self.stepper_frame = StepperFrame(content, ctx)
+        self.stepper_frame.pack(fill="x", pady=(0, 16))
+
+        cards = ctk.CTkFrame(content, fg_color=TRANSPARENTE)
+        cards.pack(fill="x", pady=(0, 16))
+        cards.grid_columnconfigure(0, weight=2, uniform="c")
+        cards.grid_columnconfigure(1, weight=3, uniform="c")
+
+        self.participant_card = ParticipantCard(cards, ctx)
+        self.participant_card.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
+
+        self.files_card = FilesCard(cards, ctx)
+        self.files_card.grid(row=0, column=1, sticky="nsew", padx=(8, 0))
+
+        self.player_bar = PlayerBar(content, ctx)
+        self.player_bar.pack(fill="x", pady=(0, 16))
+
+        self.graph = GraphPlaceholder(content, ctx)
+        self.graph.pack(fill="x", pady=(0, 16))
+
+        # rodapé preso embaixo (criado antes do content para reservar o espaço inferior)
         self.down_frame = DownFrame(self, ctx)
+        self.down_frame.pack(fill="x", side="bottom") 
 
-        self.after(100, self.mid_frame.upright_mid_frame.check_music_file_infos)
-
+        self.after(100, self.files_card.check_music_file_infos)
 
 if __name__ == "__main__":
     app = Compasso()
