@@ -1,8 +1,8 @@
 """Constantes visuais compartilhadas da GUI (cores, fontes e dimensões).
 
 Tema escuro do Compasso. Três paletas estão disponíveis (Teal/Iris/Amber); a paleta
-ativa é escolhida por `C` — trocar essa única linha recolore toda a interface. As
-constantes semânticas (WIN_BG, ACCENT, TEXT...) derivam de `C` e são importadas pelos
+ativa é escolhida por `THEME` — trocar essa única linha recolore toda a interface. As
+constantes semânticas (WIN_BG, ACCENT, TEXT...) derivam de `THEME` e são importadas pelos
 frames e helpers, evitando repetir cores em cada módulo.
 """
 
@@ -84,40 +84,40 @@ PALETTE_AMBER = {
 }
 
 # >>> Paleta ativa (troque por PALETTE_IRIS ou PALETTE_AMBER para recolorir tudo) <<<
-C = PALETTE_TEAL
+THEME = PALETTE_IRIS
 
 # ---------------------------------------------------------------------------
 # Constantes semânticas de cor (derivadas da paleta ativa)
 # ---------------------------------------------------------------------------
-WIN_BG: str = C["win_bg"]
-BAR_BG: str = C["bar_bg"]
-FOOTER_BG: str = C["footer_bg"]
-BORDER: str = C["border"]
-BORDER_WIN: str = C["border_win"]
-INPUT_BG: str = C["input_bg"]
+WIN_BG: str = THEME["win_bg"]
+BAR_BG: str = THEME["bar_bg"]
+FOOTER_BG: str = THEME["footer_bg"]
+BORDER: str = THEME["border"]
+BORDER_WIN: str = THEME["border_win"]
+INPUT_BG: str = THEME["input_bg"]
 
-TEXT: str = C["text"]
-MUTED: str = C["muted"]
-FAINT: str = C["faint"]
-FAINT2: str = C["faint2"]
+TEXT: str = THEME["text"]
+MUTED: str = THEME["muted"]
+FAINT: str = THEME["faint"]
+FAINT2: str = THEME["faint2"]
 
-ACCENT: str = C["accent"]
-ACCENT_INK: str = C["accent_ink"]
-ACCENT_TINT: str = C["accent_tint"]
-ACCENT_BORDER: str = C["accent_border"]
+ACCENT: str = THEME["accent"]
+ACCENT_INK: str = THEME["accent_ink"]
+ACCENT_TINT: str = THEME["accent_tint"]
+ACCENT_BORDER: str = THEME["accent_border"]
 
-SUCCESS: str = C["success"]
-DANGER: str = C["danger"]
-DANGER_TINT: str = C["danger_tint"]
-DANGER_BORDER: str = C["danger_border"]
+SUCCESS: str = THEME["success"]
+DANGER: str = THEME["danger"]
+DANGER_TINT: str = THEME["danger_tint"]
+DANGER_BORDER: str = THEME["danger_border"]
 
 TRANSPARENTE: str = "transparent"
 
 # ---------------------------------------------------------------------------
 # Dimensões / layout
 # ---------------------------------------------------------------------------
-WIN_MIN_WIDTH: int = 1120
-WIN_MIN_HEIGHT: int = 760
+WIN_MIN_WIDTH: int = 1280
+WIN_MIN_HEIGHT: int = 768
 CORNER: int = 14          # raio dos cartões
 CORNER_SM: int = 9        # raio de campos/botões
 

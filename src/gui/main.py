@@ -23,7 +23,7 @@ class Compasso(ctk.CTk):
         super().__init__(fg_color=WIN_BG)
         self.title(nome)
         self.minsize(WIN_MIN_WIDTH, WIN_MIN_HEIGHT)
-        set_window_configs(self, width_multip=0.5, height_multip=0.5)
+        set_window_configs(self, width_multip=0.5, height_multip=0.6)
 
         # ícone da janela principal (Windows usa .ico; em outros SOs o ícone vem do bundle)
         try:

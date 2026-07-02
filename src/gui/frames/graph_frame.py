@@ -10,7 +10,7 @@ class GraphPlaceholder(ctk.CTkFrame):
     """
 
     def __init__(self, master, ctx=None):
-        super().__init__(master, fg_color=WIN_BG, height=80, corner_radius=CORNER,
+        super().__init__(master, fg_color=WIN_BG, height=50, corner_radius=CORNER,
                          border_width=1, border_color=BORDER_WIN)
         self.pack_propagate(False)
         ctk.CTkLabel(self, text="ESPAÇO RESERVADO · GRÁFICO EM TEMPO REAL",

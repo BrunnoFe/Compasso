@@ -17,7 +17,6 @@ from .widgets import (show_message, styled_label, styled_button, styled_entry,
 from src.core.config_manager import (save_config, validate_values, get_experiment_files_dir,
                                      CHANNEL_OPTIONS)
 
-
 class ExperimentConfigWindow(ctk.CTkToplevel):
     """Janela de configuração do experimento.
 

@@ -30,7 +30,6 @@ def show_message(title: str, message: str, icon: str = "cancel") -> None:
                   border_width=1, title_color=TEXT, button_text_color=TEXT,
                   corner_radius=CORNER, sound=True, width=500, height=300)
 
-
 def load_image(path: str, fallback=None):
     """Carrega `path` como `ctk.CTkImage`; retorna `fallback` se o arquivo faltar."""
     try:
@@ -39,20 +38,6 @@ def load_image(path: str, fallback=None):
     except Exception as e:
         gui_logger.logger.warning(f"Imagem ausente: {path} ({e}). Usando fallback.")
         return fallback
-
-
-def bind_hover_images(button, normal, dim, only_when_enabled: bool = False) -> None:
-    """Faz o botão trocar `normal`<->`dim` ao passar o mouse.
-
-    :param only_when_enabled: se True, só escurece quando o botão não está desabilitado.
-    """
-    if only_when_enabled:
-        button.bind('<Enter>', lambda event: button.configure(image=dim) if button.cget("state") != "disabled" else None)
-    else:
-        button.bind('<Enter>', lambda event: button.configure(image=dim))
-
-    button.bind('<Leave>', lambda event: button.configure(image=normal))
-
 
 # ---------------------------------------------------------------------------
 # Fábricas de widgets estilizados
@@ -63,7 +48,6 @@ def styled_label(master, **kwargs):
     opts = dict(font=BASE_FONT_MIN, text_color=TEXT, bg_color=TRANSPARENTE, fg_color=TRANSPARENTE)
     opts.update(kwargs)
     return ctk.CTkLabel(master, **opts)  # type: ignore
-
 
 def styled_button(master, **kwargs):
     """CTkButton escuro com cantos/borda/fonte padrão.
@@ -77,7 +61,6 @@ def styled_button(master, **kwargs):
     opts.update(kwargs)
     return ctk.CTkButton(master, **opts)  # type: ignore
 
-
 def styled_entry(master, **kwargs):
     """CTkEntry com o estilo escuro dos campos do formulário."""
     opts = dict(corner_radius=CORNER_SM, border_width=1, border_color=BORDER,
@@ -85,7 +68,6 @@ def styled_entry(master, **kwargs):
                 font=ctk.CTkFont(DISPLAY_FAMILY, 13), text_color=TEXT)
     opts.update(kwargs)
     return ctk.CTkEntry(master, **opts)  # type: ignore
-
 
 def styled_combobox(master, **kwargs):
     """CTkComboBox com o estilo escuro padrão."""
@@ -98,7 +80,6 @@ def styled_combobox(master, **kwargs):
     opts.update(kwargs)
     return ctk.CTkComboBox(master, **opts)  # type: ignore
 
-
 # ---------------------------------------------------------------------------
 # Componentes do redesign (cartões, rótulos tipográficos, badges)
 # ---------------------------------------------------------------------------
@@ -109,24 +90,20 @@ def card(master, **kwargs):
     opts.update(kwargs)
     return ctk.CTkFrame(master, **opts)  # type: ignore
 
-
 def title(master, text, size=15, **kwargs):
     """Título de cartão (display, negrito)."""
     return ctk.CTkLabel(master, text=text, text_color=TEXT,
                         font=ctk.CTkFont(DISPLAY_FAMILY, size, weight="bold"), **kwargs)
-
 
 def caption(master, text, color=None, **kwargs):
     """Rótulo pequeno/apagado (caption em maiúsculas)."""
     return ctk.CTkLabel(master, text=text, text_color=color or FAINT,
                         font=ctk.CTkFont(DISPLAY_FAMILY, 11, weight="bold"), **kwargs)
 
-
 def mono(master, text, size=13, color=None, **kwargs):
     """Rótulo monoespaçado (caminhos, tempos, contadores)."""
     return ctk.CTkLabel(master, text=text, text_color=color or TEXT,
                         font=ctk.CTkFont(MONO_FAMILY, size), **kwargs)
-
 
 def ghost_button(master, text, command=None, size=13, **kwargs):
     """Botão secundário 'fantasma' (fundo do input, borda sutil, texto apagado)."""
@@ -135,7 +112,6 @@ def ghost_button(master, text, command=None, size=13, **kwargs):
                 corner_radius=CORNER_SM, font=ctk.CTkFont(DISPLAY_FAMILY, size))
     opts.update(kwargs)
     return ctk.CTkButton(master, **opts)  # type: ignore
-
 
 def danger_button(master, text, command=None, size=13, **kwargs):
     """Botão de perigo (parar/gravando) em tons de vermelho."""
@@ -146,7 +122,6 @@ def danger_button(master, text, command=None, size=13, **kwargs):
     opts.update(kwargs)
     return ctk.CTkButton(master, **opts)  # type: ignore
 
-
 def circle(master, text, filled=True, size=28, **kwargs):
     """Badge circular (stepper, avatar do participante)."""
     return ctk.CTkLabel(
@@ -154,7 +129,6 @@ def circle(master, text, filled=True, size=28, **kwargs):
         fg_color=ACCENT if filled else ACCENT_TINT,
         text_color=ACCENT_INK if filled else ACCENT,
         font=ctk.CTkFont(DISPLAY_FAMILY, 13, weight="bold"), **kwargs)
-
 
 def check_icon(master, done=True, size=22, radius=7, **kwargs):
     """Ícone de check de uma linha de arquivo (verde quando pronto, apagado quando não)."""

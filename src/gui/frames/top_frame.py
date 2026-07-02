@@ -81,7 +81,7 @@ class ConnectionFrame(ctk.CTkFrame):
         self.canal_optionmenu.pack()
 
         # espaçador
-        ctk.CTkFrame(main_connect_frame, fg_color=TRANSPARENTE).pack(side="left", expand=True, fill="x")
+        ctk.CTkFrame(main_connect_frame, fg_color=TRANSPARENTE, height=1).pack(side="left", expand=True, fill="x")
 
         # ----- slot direito: estados de conexão (Conectar | pill + Desconectar) -----
         self._right_conn_frame = ctk.CTkFrame(main_connect_frame, fg_color=TRANSPARENTE)
